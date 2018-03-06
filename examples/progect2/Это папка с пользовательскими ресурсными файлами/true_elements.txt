@@ -1,0 +1,135 @@
+#encoding UTF-8
+#Расшифровка\Код\Фирма@Ref
+@
++\Резонатор кварцевый HC49S-20-L-30-30-F-22,1184MГц\Vanlong@B
+@
++(GRM188-X7R-16В-0,1 мкФ±10%)\GRM188R71C104Mxx\Murata@C
+-(GRM188-X7R-16В-0,1 мкФ±20%)\GRM188R71C104Mxx\Murata@C
+@
++(GRM188-X7R-50В-0,01 мкФ±20%)\GRM188R71H103Mxx\Murata@C
+@
++(GRM21B-X5R-6,3B-10 мкФ±10%)\GRM188R71C104Mxx\Murata@C
+@
++(GRM21B-X5R-6,3B-10 мкФ±10%)\GRM21BR60J106Kxx\Murata@C
+@
++(GRM188-X7R-50В-6800 пФ±20%)\GRM188R71H682Mxx\Murata@C
+@
++(B45196H-25B-33 мкФ-±10%-D)\B45196H5336K409\Epcos@C
+@
++(GRM188-X7R-50В-2200 пФ±20%)\GRM188R71H222Mxx\Murata@C
+@
++(B45196H-10B-100 мкФ-±10%-C)\B45196H1107K309\Epcos@C
+@
++(GRM188-P2H-50В-33пФ±5%)\GRM1886P1H330Jxx\Murata@C
+@
++(GRM219-X5R-6,3B-4,7 мкФ±10%)\GRM219R60J475KE01D\Murata@C
+@
++(NFA31CС-470 пФ±15%-25B)\NFA31CC471R1E4x\Murata@C
+@
++(NFM21PC-0,47 мкФ±15%-16B) \NFM21PC474R1C3x\Murata@C
+@
++\Приёмник навигационный TIM-LH\U-blox@D
+@
++\TPS76325DB VT\Texas Instruments@D
+@
++\74LVC04 AD\Philips@D
+@
++\MIC2177BWM\Micrel@D
+@
++\MIC2177-3,3BWM\Micrel@D
+@
++\Устройство загрузки процессора\АБВГД.123456.637 ТУ@D
+@
++\XC2S100-6  TQ144 I\Xilinx@D
+@
++\Устройство конфигурирования ПЛИС\АБВГД.123456.639 ТУ@D
+@
++\DS1339C-33\Maxim@D
+@
++\AS6C1008-55TIN\ALLIANCE@D
+@
++\DS1818R-20-U\Maxim@D
+@
++\AT45DB642D-TU\Atmel@D
+@
++\ADM3222ARU\Analog Devices@D
+@
++\Элемент питания CR1616\Varta@G
+@
++\MSS1038-683NLx\Coilcraft@L
+@
++\Набор дросселей BLA31AG601SN4\Murata@L
+@
++\MSS7341-683MLx\Coilcraft@L
+@
++(CR0603 ±5% /-0 Ом )\CR0603-J/-000E\Bourns@R
+@
++(CR0603 ±5% W-10 кОм )\CR0603-JW-103E\Bourns@R
+@
++(CR0603 ±5% W-51 кОм )\CR0603-JW-513E\Bourns@R
+@
++(CR0603 ±5% W-4,7 кОм )\CR0603-JW-472E\Bourns@R
+@
++(CR0603 ±1% X-27 кОм )\CR0603-FX-2702E\Bourns@R
+@
++(CR0603 ±1% X-82 кОм )\CR0603-FX-8202E\Bourns@R
+@
++(CR0603 ±5% W-20 кОм )\CR0603-JW-203E\Bourns@R
+@
++(CR0603 ±1% X-20 кОм )\CR0603-FX-2002E\Bourns@R
+@
++(CR0603 ±1% X-10 кОм )\CR0603-FX-1002E\Bourns@R
+@
++(CR0805 ±5% W-200 кОм )\CR0805-JW-204E\Bourns@R
+@
++(CR0603 ±5% W-1 кОм )\CR0603-JW-102E\Bourns@R
+@
++\Кнопка 7914G-1-000E\Bourns@S
+@
++\Стабилитрон BZX84-C3V3\Philips@VD
+@
++\Диод Шоттки CD0805-B0130\Bourns@VD
+@
++\Диод Шоттки 15MQ040N\Farchild Semiconductors@VD
+@
++\Диод Шоттки MBRS130L\Farchild Semiconductors@VD
+@
++\BC847B\Infenion Technologies@VT
+@
++\IRLML6402\International Rectifier@VT
+@
++\Вилка  WF-4R\Amphenol@X
+@
++\Вилка  СНЦ127-7/12ВП27-1-В\АШДК.434410.082 ТУ@X
+@
++\Держатель элемента питания  676-482 1\Keystone@X
+@
++\Розетка MMCX 135-3701-201\Johnson Components@X
+@
++\Вилка  РСГ7 ТВ\АВ0.364.047 ТУ@X
+@
++\Вилка  РСГ10 ТВ\АВ0.364.047 ТУ@X
+@
++\Вилка  PLLD1.27-10\Amphenol@X
+@
++\Вилка  PLS-6R\Amphenol@X
+@
++\Розетка  BLD-6\Amphenol@X
+@
++\Вилка  PLS-9R\Amphenol@X
+@
++\Вилка  PLD-7R\Amphenol@X
+@
++\Розетка  BLD-8\Amphenol@X
+@
++\Вилка  PLD-10R\Amphenol@X
+@
++\Розетка  BLD-10\Amphenol@X
+@
++\Розетка  HU-4\Amphenol@X
+@
++\Розетка 25 SMA-50-2-5 / 111 NH\Huber@X
+@
++\Вилка  MMCX 135-3403-101\Johnson Components@X
+@
++\Контакт\АБВГД.123456.074.300@X

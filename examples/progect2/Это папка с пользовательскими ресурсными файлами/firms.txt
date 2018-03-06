@@ -1,0 +1,27 @@
+#encoding UTF-8
+#Firm Name
+Vanlong
+U-blox
+Phillips
+ALLIANCE
+Varta
+Farchild Semiconductors
+Infenion Technologies
+International Rectifier
+Amphenol
+Keystone
+Johnson Components
+Huber
+Murata
+Epcos
+Micrel
+Xilinx
+Maxim
+Atmel
+Analog Devices
+Coilcraft
+Bourns
+Texas Instruments
+АВ0.364.047ТУ
+
+

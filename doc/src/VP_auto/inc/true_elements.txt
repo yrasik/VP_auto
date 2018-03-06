@@ -1,0 +1,17 @@
+#encoding UTF-8
+#Расшифровка\Код\Фирма@Ref
+@
++(GRM155-X5R-25 В-0,1 мкФ±10 %)\GRM155R61E104KA87x\Murata@C
+-(GRM155-X5R-25 В-0,1 мкФ±10 %)\GRM155R61E104KA87\Murata@C
+@
++\MAX3120EUA\Maxim@D
+-\MAX3120EUx\Maxim@D
+@
++\Набор дросселей BLA31AG601SN4x\Murata@L
+-\BLA31AG601SN4x\Murata@L
+@
++\Вилка GWAYAR-P190UD00-R00L\ODU@X
+-\Вилка GWAYAR-P19UD00-R00L\ODU@X
+@
++(GRM188-X7R-16В-0,1 мкФ±10%)\GRM188R71C104Mxx\Murata@C
+-(GRM188-X7R-16В-0,1 мкФ±20%)\GRM188R71C104Mxx\Murata@C

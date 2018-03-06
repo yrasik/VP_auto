@@ -1,0 +1,33 @@
+package "VP_auto"
+version "3.0"
+purpose "Automating the creation of documentation for the design of printed circuit boards (Автоматизация создания документации конструктора печатных плат)"
+
+description 
+"*******************************************************************************
+* 2018 Yuri Stepanenko stepanenkoyra@gmail.com                                *
+* License : GNU GENERAL PUBLIC LICENSE Version 3, June 2007                   *
+* For electronic designers from Russian Federation.                           *
+* From the report files E-CAD systems create textual documentation according  *
+* to ESKD (Из файлов отчетов E-CAD систем создаёт текстовую документацию      *
+* согласно ЕСКД)                                                              *
+* Details are given in VP_auto.pdf (Подробности доступны в VP_auto.pdf        *
+*******************************************************************************"
+
+
+option "filename" f "do-file for analysis (do-файл для анализа)" string required
+option "copies" c "Number of copies of the product (Количество копий изделия)" optional long
+
+
+option "per_style" s "List of elements (Стиль переченя элементов). Style :
+sch  - list of elements for the electrical circuit
+  (перечень элементов для электрической схемы);
+doc  - for inclusion in instruction additions (для
+  включения в дополнения инструкций)." values="sch","doc" default="sch" optional
+
+  
+option "out_folder" o "Folder for outputs. Default do-file_Dir/../out/ (Директория для выходных файлов. По умолчанию do-file_Dir/../out/)" string optional
+option "res_folder" r "Path to resource files. Default VP_auto_Dir/res/ (Путь к файлам ресурсов. По умолчанию VP_auto_Dir/res/)" string optional
+
+
+
+

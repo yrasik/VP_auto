@@ -1,0 +1,37 @@
+#encoding UTF-8
+#Firm Name
+Ortustech
+JL World
+Jauch
+Murata
+Taiyo Yuden
+Hsuan Yuan
+NXP Semiconductors
+Adesto
+Maxim
+ON Semiconductor
+ISSI
+STMicroelectronics
+Linear Technology
+Micron
+Texas Instruments
+Xilinx
+Infineon Technologies
+PoliCell
+Kingbright
+Vishay
+Coilcraft
+TDK
+Bourns
+ALPS
+Diodes Incorporated
+Littelfuse
+Molex
+Samtec
+ODU
+JAE
+Hirose
+Micrel
+Epcos
+Atmel
+Analog Devices
