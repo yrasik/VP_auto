@@ -27,7 +27,7 @@ enum Group_Title_state_enum { GROUP_TITLE_ONLY, GROUP_TITLE_AND_FIRM, GROUP_TITL
 
 class per
 { public:
-    per ( QString &PathToOutDir, QVector<element> *el_ );
+    per ( QString &PathToEtcDir, QString &PathToOutDir, QVector<element> *el_ );
     ~     per ();
     void  generate ( void );
   protected:
@@ -59,6 +59,11 @@ class per
     float y_DetimalNumber_mm;
     float y_DetimalNumber_first_mm;
 
+    int y_First_line;
+    int lines_in_first_page;
+    int lines_in_others_pages;
+
+    QString         PathToEtcDir;
     QString         PathToOutDir;
     QString         FullFileName;
     QString         FullCanvasFileName;

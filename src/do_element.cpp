@@ -156,7 +156,8 @@ bool do_element::do_element_soft_check(QString &path_to_do, QString &source)
       return false;
   }
 
-  if( Detimal_Number.indexOf(QRegExp("[, ~!@$%^&*()+|\{}:<>?]"), 0) != -1 )
+  //if( Detimal_Number.indexOf(QRegExp("[, ~!@$%^&*()+|\{}:<>?]"), 0) != -1 )
+  if( Detimal_Number.indexOf(QRegExp("[,~!@$%^&*()+|\{}:<>?]"), 0) != -1 )
   {
       *plog << LOG  << "ERROR: " << codec->toUnicode("Децимальный номер : \"") << Detimal_Number << codec->toUnicode("\" содержит недопустимые символы") << endl;
       return false;

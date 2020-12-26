@@ -18,7 +18,9 @@ along with 'VP_auto'.  If not, see <http://www.gnu.org/licenses/>. */
 /* CP1251*/
 #include "element.h"
 
-#define LOG ""
+#ifndef LOG
+  #define LOG ""
+#endif
 
 element::element ()
 {
@@ -52,7 +54,6 @@ element::element ( QString &Value, QString &Ref, int file_line_num )
 
    analyse_Value_Code();
 }
-
 
 
 element::element ( QString *source, QString *detimal, enum bom_type *bom_type_ )
@@ -733,6 +734,16 @@ QString element::get_record7 ( void )
 }
 
 
+QString element::get_record8 ( void )
+{
+  return ( get_Type_from_Value_if_not_equal_Group_Name() + " " + Code_from_Value + " " + Value_Decoding /*+ " " + Value_Firm*/);
+}
+
+QString element::get_record9 ( void )
+{
+  return ( Value_Decoding + "\\" + get_Type_from_Value_if_not_equal_Group_Name() + Code_from_Value + "\\" + Value_Firm);
+}
+
 
 
 void element::analyse_Value_Code ( void )
@@ -906,7 +917,7 @@ void element::similarity_firm ( QVector<element> &ls1, QVector<firm_name> &Firm_
     while ( elem < el.end() )
     {
       enum similarity::ss result = similarity::is_Similarity( elem->get_Value_Firm(), firm->get_Firm() );
-      if ( (result != similarity::ss::SS_SAME) && (result != similarity::ss::SS_DIFFERENT) )
+      if ( (result != similarity::SS_SAME) && (result != similarity::SS_DIFFERENT) )
       {
         *plog << "WARNING : ";
         *plog << similarity::Decoding_Similarity_result ( result );
@@ -917,7 +928,7 @@ void element::similarity_firm ( QVector<element> &ls1, QVector<firm_name> &Firm_
         *plog << firm->get_Firm() << endl << endl;
       }
 
-      if (result == similarity::ss::SS_SAME)
+      if (result == similarity::SS_SAME)
       {
         el.erase(elem);
       }

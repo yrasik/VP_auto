@@ -26,9 +26,9 @@ along with 'VP_auto'.  If not, see <http://www.gnu.org/licenses/>. */
 class pcad_per_for_doc_includes : public per
 {
   public:
-    pcad_per_for_doc_includes ( QString &PathToOutDir, QVector<element> *el_ ):per(PathToOutDir, el_)
+    pcad_per_for_doc_includes (QString &PathToEtcDir, QString &PathToOutDir, QVector<element> *el_ ):per(PathToEtcDir, PathToOutDir, el_)
     {
-
+      page_setup ();
     }
   protected:
     void  page_setup ( void );

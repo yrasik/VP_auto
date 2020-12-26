@@ -31,9 +31,9 @@ along with 'VP_auto'.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include "true_elements.h"
 
+#include "lua/lua.hpp"
 
-
-#define LOG ""
+//#define LOG ""
 
 QTextStream         *plog;
 QTextCodec          *codec;
@@ -43,6 +43,10 @@ text_width          *Text_Width;
 QVector<text_name>  Text_Names;
 QVector<firm_name>  Firm_Names;
 QVector<QVector<element> >  true_tables;
+
+lua_State *L;
+
+
 
 //Функция удаления папки
 int removeFolder ( QDir &dir )
@@ -133,6 +137,80 @@ int clearFolder ( QDir &dir )
   return res;
 }
 
+
+
+// Попробуем применить Lua для продвинутой сортировки с учетом тонких особенностей написяния отечественных обозначений.
+bool by_Value_Firm_Ref ( const QVector<element> &el1, const QVector<element> &el2 )
+{
+  class element el1_ = ( *el1.begin() );
+  class element el2_ = ( *el2.begin() );
+
+  if ( L != NULL )
+  {
+    lua_getglobal(L, "by_Value_Firm_Ref");
+    lua_pushstring(L, codec->fromUnicode( el1_.get_RefDes() ).constData());
+    lua_pushstring(L, codec->fromUnicode( el1_.get_Value_Firm() ).constData());
+    lua_pushstring(L, codec->fromUnicode( el1_.get_Code_from_Value() ).constData());
+
+    lua_pushstring(L, codec->fromUnicode( el2_.get_RefDes() ).constData());
+    lua_pushstring(L, codec->fromUnicode( el2_.get_Value_Firm() ).constData());
+    lua_pushstring(L, codec->fromUnicode( el2_.get_Code_from_Value() ).constData());
+
+    if( lua_pcall(L, 6, 1, 0) != LUA_OK )
+    {
+      printf("ERROR : in 'by_Value_Firm_Ref'  '%s'\n", lua_tostring(L, -1));
+      return false;
+    }
+
+    return (bool)lua_toboolean(L, -1);
+    //lua_pop(L, 6);//FIXME ?
+  }
+  else
+  {
+    return element::by_Value_Firm_Ref(el1, el2);
+  }
+}
+
+
+bool by_Type_from_Value_and_Code_from_Value ( const element &el1, const element &el2 )
+{
+  if ( L != NULL )
+  {
+    lua_getglobal(L, "by_Type_from_Value_and_Code_from_Value");
+    lua_pushstring(L, codec->fromUnicode( el1.Type_from_Value ).constData());
+    lua_pushstring(L, codec->fromUnicode( el1.Code_from_Value ).constData());
+
+    lua_pushstring(L, codec->fromUnicode( el2.Type_from_Value ).constData());
+    lua_pushstring(L, codec->fromUnicode( el2.Code_from_Value ).constData());
+
+    if( lua_pcall(L, 4, 1, 0) != LUA_OK )
+    {
+      printf("ERROR : in 'by_Type_from_Value_and_Code_from_Value'  '%s'\n", lua_tostring(L, -1));
+      return false;
+    }
+
+    return (bool)lua_toboolean(L, -1);
+    //lua_pop(L, 4);//FIXME ?
+  }
+  else
+  {
+    return element::by_Type_from_Value_and_Code_from_Value(el1, el2);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 int main ( int argc, char *argv[] )
 {
   struct gengetopt_args_info  ai;
@@ -147,6 +225,8 @@ int main ( int argc, char *argv[] )
   QVector<QVector<element> >  tables;
   QVector<do_element>         do_records;
   codec = QTextCodec::codecForName( "Windows-1251" );
+  QTextCodec::setCodecForLocale(QTextCodec::codecForName("Windows-1251"));
+
 
   // QString path = QDir::currentPath();
   QString         Number_of_Copy_str;
@@ -228,6 +308,7 @@ int main ( int argc, char *argv[] )
 
 
   QString   PathToResDir;
+  QString   PathToExecDir = a.applicationDirPath();
 
   if ( ai.res_folder_given )
   {
@@ -236,6 +317,33 @@ int main ( int argc, char *argv[] )
   else
   {
     PathToResDir = QCoreApplication::applicationDirPath() + "/../res";
+  }
+
+
+  QString PathToEtcDir = QCoreApplication::applicationDirPath() + "/../etc";
+
+  //-------------------------------------------------------------------------------------------------
+  QString filename( PathToEtcDir + codec->toUnicode("/sorting.lua"));
+  int       err;
+
+  L = luaL_newstate();
+  luaL_openlibs( L );
+
+  err = luaL_loadfile( L, filename.toLocal8Bit().data() );
+  if ( err != LUA_OK )
+  {
+    QString err = codec->toUnicode("WARNING: Ошибка в файле '") +
+                  filename + QObject::tr("' :") +
+                  codec->toUnicode( lua_tostring(L, -1) );
+    *plog << err << endl;
+    *plog << codec->toUnicode("  Сортировка будет проведена классическим образом.") << endl;
+    lua_close( L );
+    L = NULL;
+  }
+
+  if ( L != NULL)
+  {
+    lua_pcall(L, 0, 0, 0);
   }
 
 
@@ -257,9 +365,14 @@ int main ( int argc, char *argv[] )
     return -1;
   }
   //-------------------------------------------------------------------------------------------------
-
-
-
+/*
+  if ( true_element::reading_true_element_file_lua(true_tables, PathToResDir, PathToExecDir ) != 0 )
+  {
+    return -1;
+  }
+  //-------------------------------------------------------------------------------------------------
+ return EXIT_SUCCESS;
+*/
 
   {
     *plog << endl;
@@ -299,6 +412,27 @@ int main ( int argc, char *argv[] )
 
   element::remove_blocks_and_adding_content( PathToOutDir, tables, ls1 );
 
+
+
+#if 1
+  for ( QVector < QVector<element> >::iterator current_table = tables.begin(); current_table != tables.end(); current_table++ )
+  {
+    //current_table
+    //class per_to_log  per ( PathToOutDir, current_table );
+    //per.generate();
+    
+    for ( QVector<element>::iterator i = current_table->begin(); i != current_table->end(); i++ )
+    {
+      if ( i->get_RefDes() == codec->toUnicode("COMPO") )
+      {
+        i->set_RefDes( codec->toUnicode("ZCOMPO") );
+      }
+    }    
+    
+  }
+#endif
+
+
   //-------------------------------------------------------------------------------------------------
 #if 0
   for ( QVector < QVector<element> >::iterator current_table = tables.begin(); current_table != tables.end(); current_table++ )
@@ -318,7 +452,7 @@ int main ( int argc, char *argv[] )
   {
     for ( QVector < QVector<element> >::iterator current_table = tables.begin(); current_table < tables.end(); current_table++ )
     {
-      class pcad_per_for_doc_includes per_for_doc ( PathToOutDir, current_table );
+      class pcad_per_for_doc_includes per_for_doc ( PathToEtcDir, PathToOutDir, current_table );
       per_for_doc.generate();
     }
   }
@@ -326,7 +460,7 @@ int main ( int argc, char *argv[] )
   {
     for ( QVector < QVector<element> >::iterator current_table = tables.begin(); current_table < tables.end(); current_table++ )
     {
-      class per per ( PathToOutDir, current_table );
+      class per per ( PathToEtcDir, PathToOutDir, current_table );
       per.generate();
     }
   }
@@ -334,7 +468,7 @@ int main ( int argc, char *argv[] )
 #if 1
   for ( QVector < QVector<element> >::iterator current_table = tables.begin(); current_table < tables.end(); current_table++ )
   {
-    class sp  sp ( PathToOutDir, current_table );
+    class sp  sp ( PathToEtcDir, PathToOutDir, current_table );
     sp.generate();
   }
 #endif
@@ -346,7 +480,7 @@ int main ( int argc, char *argv[] )
   }
 #endif
 #if 1
-  class vp  rec ( PathToOutDir, &ls1, (*do_records.begin()).get_Detimal_Number(), Number_of_Copy );
+  class vp  rec ( PathToEtcDir, PathToOutDir, &ls1, (*do_records.begin()).get_Detimal_Number(), Number_of_Copy );
   rec.generate();
   rec.create_file_for_excel();
   rec.create_file_for_order();
@@ -379,7 +513,10 @@ int main ( int argc, char *argv[] )
   true_element::similarity_elements( ls1, true_tables);
 
 #endif
-
+  if( L != NULL )
+  {
+    lua_close( L );
+  }
 
   log_file->close();
 

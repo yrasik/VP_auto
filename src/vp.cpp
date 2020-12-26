@@ -20,11 +20,13 @@ along with 'VP_auto'.  If not, see <http://www.gnu.org/licenses/>. */
 
 #define LOG ""
 
-vp::vp ( QString &PathToOutDir, QVector<element> *el_, const QString &detimal_number_, signed int Number_of_Copy_ )
+vp::vp ( QString &PathToEtcDir, QString &PathToOutDir, QVector<element> *el_, const QString &detimal_number_, signed int Number_of_Copy_ )
 {
-  l_ctrl = new line_control( 259, 24, 30 );
-
+  this->PathToEtcDir = PathToEtcDir;
   this->PathToOutDir = PathToOutDir;
+
+  page_setup();
+
   Number_of_Copy = Number_of_Copy_;
   codec = QTextCodec::codecForName( "Windows-1251" );
 
@@ -48,6 +50,9 @@ vp::~vp ()
 
 void vp::page_setup ( void )
 {
+  QString filename( PathToEtcDir + codec->toUnicode("/vp_settings.lua"));
+  int       err;
+
   x_Name_mm = 29;
   x_Code_mm = x_Name_mm + 60;
   x_Doc_for_order_mm = x_Code_mm + 43;
@@ -69,7 +74,112 @@ void vp::page_setup ( void )
 
   shift_text_mm = 1;
 
+  y_First_line = 259;
+  lines_in_first_page = 24;
+  lines_in_others_pages = 30;
+
   Page_content = "";
+
+
+  lua_State *L = luaL_newstate();
+  luaL_openlibs( L );
+
+  err = luaL_loadfile( L, filename.toLocal8Bit().data() );
+  if ( err != LUA_OK )
+  {
+    QString err = codec->toUnicode("WARNING: Ошибка в файле '") +
+                  filename + QObject::tr("' :") +
+                  codec->toUnicode( lua_tostring(L, -1) );
+    *plog << err << endl;
+    lua_close( L );
+    return;
+  }
+  lua_pcall(L, 0, 0, 0);
+
+  lua_getglobal(L, "x_Name_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Name_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Code_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Code_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Doc_for_order_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Doc_for_order_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Provider_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Provider_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Assembly_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Assembly_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Count1_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Count1_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Count2_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Count2_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Count3_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Count3_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Count_summ_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Count_summ_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Note_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Note_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_PageNumber_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_PageNumber_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_PageNumber_end_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_PageNumber_end_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "y_PageNumber_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    y_PageNumber_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_DetimalNumber_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_DetimalNumber_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "y_DetimalNumber_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    y_DetimalNumber_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "y_DetimalNumber_first_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    y_DetimalNumber_first_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "shift_text_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    shift_text_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+
+  lua_getglobal(L, "y_First_line");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    y_First_line = (int)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "lines_in_first_page");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    lines_in_first_page = (int)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "lines_in_others_pages");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    lines_in_others_pages = (int)(lua_tonumberx) (L, -1, NULL);
+
+  l_ctrl = new line_control( y_First_line, lines_in_first_page, lines_in_others_pages );
+
+  lua_close( L );
 }
 
 void vp::generate ( void )
@@ -82,7 +192,6 @@ void vp::generate ( void )
   *plog << "START {" << endl;
 
   sorting();
-  page_setup();
 
   create_first_page();
 
@@ -475,6 +584,16 @@ void vp::sorting ( void )
   QVector<element>          el_local;
 
   tables.clear();
+
+  for ( QVector<element>::iterator i = el->begin(); i != el->end(); i++ )
+  {
+    if ( i->get_RefDes() == codec->toUnicode("COMPO") )
+    {
+      i->set_RefDes( codec->toUnicode("ZCOMPO") );
+    }
+  }
+
+
   std::sort( el->begin(), el->end(), element::by_RefDes_RefDes_count ); //Упорядочили по Ref  и по Des
   for ( ele = el->begin(); ele < el->end(); ele++ )
   {
@@ -550,7 +669,7 @@ void vp::sorting ( void )
 
   for ( QVector < QVector<element> >::iterator iter2 = tables.begin(); iter2 < tables.end(); iter2++ )
   {
-    std::sort( iter2->begin(), iter2->end(), element::by_Type_from_Value_and_Code_from_Value );
+    std::sort( iter2->begin(), iter2->end(), by_Type_from_Value_and_Code_from_Value );
   }
 
 #if 0

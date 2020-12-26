@@ -36,6 +36,8 @@ along with 'VP_auto'.  If not, see <http://www.gnu.org/licenses/>. */
   #include "text_name.h"
 
   #include "element.h"
+  
+  #include "lua/lua.hpp"
 
 extern QTextStream        *plog;
 extern QTextCodec         *codec;
@@ -47,8 +49,10 @@ class true_element
 {
   public:
     static int  reading_true_element_file ( QVector<QVector<element> > &true_tables, QString &PathToResDir);
-    static void similarity_elements ( QVector<element> &ls1,  QVector<QVector<element>> &etalon);
-  private:
+    static int  reading_true_element_file_lua ( QVector<QVector<element> > &true_tables, QString &PathToResDir, QString &PathToExecDir);
+
+    static void similarity_elements ( QVector<element> &ls1,  QVector<QVector<element> > &etalon);
+  protected:
 };
 #endif // TRUE_ELEMENT_H
 

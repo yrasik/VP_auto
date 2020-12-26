@@ -21,9 +21,12 @@ along with 'VP_auto'.  If not, see <http://www.gnu.org/licenses/>. */
 
   #include "element.h"
 
+  #include "lua/lua.hpp"
+
+
 class sp
 { public:
-    sp ( QString &PathToOutDir, QVector<element> *el_ );
+    sp ( QString &PathToEtcDir, QString &PathToOutDir, QVector<element> *el_ );
     ~     sp ();
     void  generate ( void ); private:
 
@@ -47,9 +50,15 @@ class sp
     float y_DetimalNumber_mm;
     float y_DetimalNumber_first_mm;
 
+    int y_First_line;
+    int lines_in_first_page;
+    int lines_in_others_pages;
+
+
     bool long_record;
 
     QString PathToOutDir;
+    QString PathToEtcDir;
     QString FullFileName;
     QString FullCanvasFileName;
 
@@ -74,6 +83,8 @@ class sp
     void try_put_record ( QString &tmp_str );
 
     void create_first_page ( void );
+
+    friend bool by_Value_Firm_Ref ( const QVector<element> &el1, const QVector<element> &el2 );
 
     class line_control *l_ctrl;
 

@@ -19,11 +19,14 @@ along with 'VP_auto'.  If not, see <http://www.gnu.org/licenses/>. */
 #include "sp.h"
 
 //#define LOG ""
-sp::sp ( QString &PathToOutDir, QVector<element> *el_ )
+sp::sp ( QString &PathToEtcDir, QString &PathToOutDir, QVector<element> *el_ )
 {
-  l_ctrl = new line_control( 270, 24, 30 );
-
+  this->PathToEtcDir = PathToEtcDir;
   this->PathToOutDir = PathToOutDir;
+
+  page_setup();
+
+
   processing = true;
   el = new QVector<element>;
   document = new QVector<QString>;
@@ -47,6 +50,9 @@ sp::~sp ()
 
 void sp::page_setup ( void )
 {
+  QString filename( PathToEtcDir + codec->toUnicode("/sp_settings.lua"));
+  int       err;
+
   x_Format_mm = 20.5;
   x_Pozition_mm = 32.5;
   x_Oboznachen_mm = 40.5;
@@ -54,21 +60,118 @@ void sp::page_setup ( void )
   x_Count_mm = 173.5;
   x_Addon_mm = 183.5;
   x_Addon_end_mm = 205.5;
-
   shift_text_mm = 2;
-
   x_PageNumber_mm = 195.5;
   x_PageNumber_end_mm = 205.5;
   y_PageNumber_mm = 7;
-
   x_DetimalNumber_mm = 85.5;
   y_DetimalNumber_mm = 10;
   y_DetimalNumber_first_mm = 35;
+
+  Poz_Oboznachenie = 2;
+
+  y_First_line = 270;
+  lines_in_first_page = 24;
+  lines_in_others_pages = 30;
+
 
   put_group_title_and_firm = false;
   old_element_in_groupe = false;
 
   Page_content = "";
+
+  lua_State *L = luaL_newstate();
+  luaL_openlibs( L );
+
+  err = luaL_loadfile( L, filename.toLocal8Bit().data() );
+  if ( err != LUA_OK )
+  {
+    QString err = codec->toUnicode("WARNING: Ошибка в файле '") +
+                  filename + QObject::tr("' :") +
+                  codec->toUnicode( lua_tostring(L, -1) );
+    *plog << err << endl;
+    lua_close( L );
+    return;
+  }
+  lua_pcall(L, 0, 0, 0);
+
+  lua_getglobal(L, "x_Format_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Format_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Pozition_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Pozition_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Oboznachen_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Oboznachen_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Code_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Code_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Count_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Count_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Addon_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Addon_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_Addon_end_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_Addon_end_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "shift_text_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    shift_text_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_PageNumber_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_PageNumber_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_PageNumber_end_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_PageNumber_end_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "y_PageNumber_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    y_PageNumber_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "x_DetimalNumber_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    x_DetimalNumber_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "y_DetimalNumber_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    y_DetimalNumber_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "y_DetimalNumber_first_mm");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    y_DetimalNumber_first_mm = (float)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "Poz_Oboznachenie");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    Poz_Oboznachenie = (float)(lua_tonumberx) (L, -1, NULL);
+
+
+  lua_getglobal(L, "y_First_line");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    y_First_line = (int)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "lines_in_first_page");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    lines_in_first_page = (int)(lua_tonumberx) (L, -1, NULL);
+
+  lua_getglobal(L, "lines_in_others_pages");
+  if( lua_type(L, -1) == LUA_TNUMBER )
+    lines_in_others_pages = (int)(lua_tonumberx) (L, -1, NULL);
+
+  l_ctrl = new line_control( y_First_line, lines_in_first_page, lines_in_others_pages );
+
+
+  lua_close( L );
 }
 
 bool sp::open_files ( void )
@@ -135,19 +238,19 @@ void sp::create_first_stamp ( void )
 void sp::generate ( void )
 {
   *plog << endl;
-  *plog << "#########################################################################" << endl;
+  *plog << codec->toUnicode( "#########################################################################" ) << endl;
   *plog << codec->toUnicode( "###                   Генерация спецификации                          ###" ) << endl;
-  *plog << "#########################################################################" << endl;
+  *plog << codec->toUnicode( "### для сборки: '" ) <<  ( *((*el).begin()) ).get_Detimal_Number() << "' ###" << endl;
+  *plog << codec->toUnicode( "#########################################################################" ) << endl;
   *plog << endl;
   *plog << "START {" << endl;
 
   sorting();
-  page_setup();
+
 
   std::string canvas_string;
 
   create_first_page();
-  Poz_Oboznachenie = 2;
 
   for ( iter_same_Ref_Firm = spec.begin(); iter_same_Ref_Firm < spec.end(); iter_same_Ref_Firm++ )
   {
@@ -566,6 +669,7 @@ void sp::try_put_record ( QString &tmp_str )
 
 }
 
+
 void sp::sorting ()
 {
   QVector<QVector<element> >          tables; //Для хранения таблиц с одинаковыми элементами
@@ -602,7 +706,7 @@ void sp::sorting ()
   }
 
   //Теперь список tables представляет собой совокупность таблиц с одинаковыми элементами /////
-  std::sort( tables.begin(), tables.end(), element::by_Value_Firm_Ref );
+  std::sort( tables.begin(), tables.end(), by_Value_Firm_Ref );
 
   // Для полного счастья нужно, каждую такую таблицу представить тоже в виде таблиц, рефдесы в которых инкрементируются на единицу (для облегчения формирования спецификации)
   specification.clear();
@@ -708,5 +812,74 @@ void sp::sorting ()
 
   *plog << "***************************************************************************************" << endl << endl;
 #endif
+
+#if 1
+  * plog << "**************************************************************************************" << endl;
+  for ( QVector < QVector < QVector < QVector<element> > > >::iterator iter0 = spec.begin(); iter0 < spec.end(); iter0++ )
+  {
+    //*plog << "   ~~~ Same Ref Firm ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+    *plog << "   ~~~ " << codec->toUnicode("Фирма '") << iter0->begin()->begin()->begin()->get_Value_Firm() << "' ~~~~~~~~~" << endl;
+    for ( QVector < QVector < QVector<element> > >::iterator iter_same_Ref_Firm_Code = iter0->begin(); iter_same_Ref_Firm_Code < iter0->end(); iter_same_Ref_Firm_Code++ )
+    {
+     // *plog << "     ==== Same Code ============================================================================" << endl;
+
+      int Count_int = 0;
+
+      for ( QVector < QVector<element> >::iterator iter2 = iter_same_Ref_Firm_Code->begin(); iter2 < iter_same_Ref_Firm_Code->end(); iter2++ )
+      {
+        for ( QVector<element>::iterator iter3 = iter2->begin(); iter3 < iter2->end(); iter3++ )
+        {
+          Count_int += iter3->get_Count();
+        }
+      }
+
+      *plog << "   " << iter_same_Ref_Firm_Code->begin()->begin()->get_record8()  << "     " << QString::number( Count_int ) << endl;
+      *plog << "               ";
+
+       for ( QVector < QVector<element> >::iterator iter_same_Ref_Firm_Code_Addon = iter_same_Ref_Firm_Code->begin(); iter_same_Ref_Firm_Code_Addon < iter_same_Ref_Firm_Code->end(); iter_same_Ref_Firm_Code_Addon++ )
+       {
+           QString RefDes_RefDes = iter_same_Ref_Firm_Code_Addon->begin()->get_RefDes_and_Count();
+
+           QVector<element>::iterator  iter_same_Ref_Firm_Code_Addon_End;
+           iter_same_Ref_Firm_Code_Addon_End = ( iter_same_Ref_Firm_Code_Addon->end() ) - 1;
+
+           switch ( iter_same_Ref_Firm_Code_Addon->size() )
+           {
+             case 0: //ERROR
+               break;
+             case 1:
+               if ( (iter_same_Ref_Firm_Code_Addon + 1) < iter_same_Ref_Firm_Code->end() )
+               {
+                 if ( (iter_same_Ref_Firm_Code_Addon + 1)->size() == 1 )
+                 {
+                   iter_same_Ref_Firm_Code_Addon++;
+                   RefDes_RefDes += "," + iter_same_Ref_Firm_Code_Addon->begin()->get_RefDes_and_Count();
+                 }
+               }
+               break;
+             case 2:
+               RefDes_RefDes += "," + iter_same_Ref_Firm_Code_Addon_End->get_RefDes_and_Count();
+               break;
+             default:
+               RefDes_RefDes += "..." + iter_same_Ref_Firm_Code_Addon_End->get_RefDes_and_Count();
+           }
+
+           if( iter_same_Ref_Firm_Code_Addon < (iter_same_Ref_Firm_Code->end() - 1) )
+           {
+             RefDes_RefDes += ",";
+           }
+
+           *plog <<  /*"  " <<*/ RefDes_RefDes;
+       }
+
+       *plog << endl;
+    }
+  }
+
+  *plog << "***************************************************************************************" << endl << endl;
+#endif
+
+
+
 }
 

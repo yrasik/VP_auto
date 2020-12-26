@@ -21,9 +21,11 @@ along with 'VP_auto'.  If not, see <http://www.gnu.org/licenses/>. */
 
   #include "element.h"
 
+  #include "lua/lua.hpp"
+
 class vp
 { public:
-    vp ( QString &PathToOutDir, QVector<element> *el_, const QString &detimal_number_, signed int Number_of_Copy_ );
+    vp ( QString &PathToEtcDir, QString &PathToOutDir, QVector<element> *el_, const QString &detimal_number_, signed int Number_of_Copy_ );
     ~     vp ();
     void  generate ( void );
     void  create_file_for_excel ( void );
@@ -49,6 +51,10 @@ class vp
     float y_DetimalNumber_mm;
     float y_DetimalNumber_first_mm;
 
+    int y_First_line;
+    int lines_in_first_page;
+    int lines_in_others_pages;
+
     bool long_record;
     signed int Number_of_Copy;
 
@@ -64,6 +70,7 @@ class vp
     QString detimal_number;
     QString PathToOutDir;
     QString FullFileName;
+    QString PathToEtcDir;
 
     std::ifstream canvas_file;
     std::string canvas_string;
@@ -91,6 +98,10 @@ class vp
     QVector<element>::iterator iter_same_Ref_Value_Detimal;
 
     float shift_text_mm;
+
+
+    friend bool by_Value_Firm_Ref ( const QVector<element> &el1, const QVector<element> &el2 );
+    friend bool by_Type_from_Value_and_Code_from_Value ( const element &el1, const element &el2 );
 
     enum Group_Title_state_enum Group_Title_state;
 };

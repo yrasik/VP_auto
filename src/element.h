@@ -49,10 +49,13 @@ along with 'VP_auto'.  If not, see <http://www.gnu.org/licenses/>. */
   #include "text_name.h"
   #include "text_width.h"
 
+  #include "lua/lua.hpp"
 
 extern QTextStream  *plog;
 extern QTextCodec   *codec;
 extern QFontMetrics *FontMetric;
+extern lua_State *L;
+
 
 
 enum process { EXEC, RESTART, STOP };
@@ -165,10 +168,17 @@ class element
     QString get_record5 ( void );
     QString get_record6 ( void );
     QString get_record7 ( void );
+    QString get_record8 ( void );
+    QString get_record9 ( void );
 
     QString get_RefDes ( void )
     {
       return RefDes;
+    }
+
+    void set_RefDes ( QString str )
+    {
+      RefDes = str;
     }
 
     unsigned int get_RefDes_Count ( void )
@@ -296,5 +306,15 @@ class element
     bool          element_ad ( QString *source, QString *detimal );
     int           file_line_num;
 };
+
+
+// Попробуем применить Lua для продвинутой сортировки с учетом тонких особенностей написяния отечественных обозначений.
+bool by_Value_Firm_Ref ( const QVector<element> &el1, const QVector<element> &el2 );
+
+bool by_Type_from_Value_and_Code_from_Value ( const element &el1, const element &el2 );
+
+
+
+
 #endif // ELEMENT_H
 

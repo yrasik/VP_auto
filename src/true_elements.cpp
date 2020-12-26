@@ -21,6 +21,104 @@ along with 'VP_auto'.  If not, see <http://www.gnu.org/licenses/>. */
 #define LOG ""
 
 
+
+int true_element::reading_true_element_file_lua ( QVector<QVector<element> > &true_tables, QString &PathToResDir, QString &PathToExecDir )
+{
+  QFile   *true_file;
+  int result;
+
+  *plog << endl;
+  *plog << endl;
+
+  // Qstring file_name_extended = this->PathToResDir + "/elements_full_attr.lua";
+  //QString script_name = PathToResDir + "true_elements_reader.lua";
+  QString script_name = PathToExecDir + "/true_elements_reader.lua";
+  int       err;
+  lua_State *L = luaL_newstate();
+  luaL_openlibs( L );
+  
+  err = luaL_loadfile( L, script_name.toLocal8Bit().data() );
+  if ( err != LUA_OK )
+  {
+    *plog << "ERROR in file '" << script_name << "' :" << endl;
+    *plog << codec->toUnicode( lua_tostring(L, -1) ) << endl;
+    lua_close( L );
+    return -1;
+  }
+  
+  err = lua_pcall( L, 0, 0, 0 );
+  if ( err != LUA_OK )
+  {
+    *plog << "ERROR in file '" << script_name << "' :" << endl;
+    *plog << codec->toUnicode( lua_tostring(L, -1) ) << endl;
+    lua_close( L );
+    return -3;
+  }
+
+
+
+
+  lua_getglobal(L, "exec");
+  lua_pushstring( L, PathToResDir.toLocal8Bit().data() );
+  lua_pushstring( L, " " );
+  if( lua_pcall(L, 2, 2, 0) != LUA_OK )
+  {
+    *plog << "ERROR : in 'exec' \n" << endl;
+    *plog << codec->toUnicode( lua_tostring(L, -1) ) << endl;
+    return -2;
+  }
+
+
+  if(! lua_isinteger(L, -2))
+  {
+    // printf("ERROR : in return type from 'get_CAD()'  '%s'\n", lua_tostring(L, -1));
+     return -3;
+  }
+  result = (int)lua_tointeger(L, -2);
+
+/*
+  if(! lua_isinteger(L, -1))
+  {
+     printf("ERROR : in return type from 'get_CAD()'  '%s'\n", lua_tostring(L, -1));
+     return -4;
+  }
+*/
+
+
+
+
+
+
+  lua_getglobal(L, "get_cell");
+  lua_pushinteger(L, 1);
+  if( lua_pcall(L, 1, 1, 0) != LUA_OK )
+  {
+    *plog << "ERROR : in 'get_cell' \n" << endl;
+    *plog << codec->toUnicode( lua_tostring(L, -1) ) << endl;
+    return -2;
+  }
+
+
+  if(! lua_isstring(L, -1))
+  {
+    // printf("ERROR : in return type from 'get_CAD()'  '%s'\n", lua_tostring(L, -1));
+     return -3;
+  }
+  const char  *log = lua_tostring( L, -1 );
+
+ *plog << ">>>>>>>>>>>>>>3>>>>>>>>>>>>>>>>" << log << endl;
+
+
+
+
+  
+  lua_close( L );
+  
+  
+  return 0;
+}
+
+
 int true_element::reading_true_element_file ( QVector<QVector<element> > &true_tables, QString &PathToResDir )
 {
   QFile   *true_file;
@@ -170,9 +268,7 @@ int true_element::reading_true_element_file ( QVector<QVector<element> > &true_t
 
 
 
-
-
-void true_element::similarity_elements ( QVector<element> &ls1,  QVector<QVector<element>> &etalon)
+void true_element::similarity_elements ( QVector<element> &ls1,  QVector<QVector<element> > &etalon)
 {
   QVector<element> target;
 
@@ -183,7 +279,7 @@ void true_element::similarity_elements ( QVector<element> &ls1,  QVector<QVector
 
 
   QVector<element>::iterator  iter_target;
-  QVector<QVector<element>>::iterator  iter_etalon;
+  QVector<QVector<element> >::iterator  iter_etalon;
   QVector<element>::iterator  iter_etalon_element;
 
   for ( iter_etalon = etalon.begin(); iter_etalon < etalon.end(); iter_etalon++ )
@@ -239,7 +335,8 @@ void true_element::similarity_elements ( QVector<element> &ls1,  QVector<QVector
           *plog << iter_etalon_element->get_record2() << endl;
           *plog << codec->toUnicode("Таким образом, элемент записанный выше, ПОЛНОСТЬЮ СООТВЕТСТВУЕТ элементу :") << endl;
           *plog << "    ";
-          *plog << iter_etalon->begin()->get_record2() << endl << endl;
+          *plog << iter_etalon->begin()->get_record2() << endl;
+          *plog << iter_etalon->begin()->get_record9() << endl << endl;
           iter_target->set_removable();
          }
         iter_etalon_element++;
