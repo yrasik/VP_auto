@@ -1,3 +1,5 @@
+-- Take from https://github.com/CurtisFenner/luafmt
+
 local function printHelp()
 	print("usage:")
 	print("\tlua " .. arg[0] .. " <lua file> [column hint]")
