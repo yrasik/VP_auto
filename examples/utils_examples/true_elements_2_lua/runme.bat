@@ -9,7 +9,7 @@ iconv -f utf-8  -t cp1251    ../../../res/true_elements.txt  > ./out/true_elemen
 
 lua53 %PATH_TO_LUA%/lua/true_elements_2_lua.lua  ^
     --fin ./out/true_elements_cp1251.txt  ^
-    --fin_names_lua ./names.lua  ^
+    --fin_names_lua ../names_2_lua/out/names.lua  ^
     --fout ./out/elements_base_true.lua   ^
     --flog ./out/elements_base_true.log
 
