@@ -119,7 +119,32 @@ DeviceBase[#DeviceBase + 1] = {
 
 
 local function exec(fin, fout, flog)
+  fout:write(preamble)
 
+  for l in fin:lines() do 
+    local fields = split(l, '\t')
+    print (l) 
+    Value_Decode = fields[2]:match('^[%d%D]+ %(([%d%D]+)')
+   
+    if( Value_Decode ~= nil) then
+      Value_Decode = '('..Value_Decode
+      Code_from_Value = replace(fields[2], Value_Decode, '')
+    else
+      Code_from_Value = fields[2]
+      Value_Decode = ''
+    end
+   
+    Code_from_Value = Code_from_Value:gsub(' *$', '') --пробелы в конце строки
+
+    local str = string.format(template, 
+                                fields[1], 
+                                Code_from_Value,
+                                Value_Decode,
+                                fields[3],  
+                                fields[4]
+                             )
+    fout:write(str)
+  end
 end
 
 
