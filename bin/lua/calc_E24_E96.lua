@@ -102,13 +102,11 @@ local function calc_Exx(Exx, r_value)
   local Mux = -12
   local R_Exx = 0
   local R_Exx_Mux = 0
-  --print('----')
-  --print(r_value)
+  
   while ( true ) do
     local max = tonumber(Exx[#Exx]) * 10^Mux
     local min_mux_10 = tonumber(Exx[1]) * 10^(Mux + 1)
-    local min = tonumber(Exx[1]) * 10^Mux
-    
+    local min = tonumber(Exx[1]) * 10^Mux  
     if ( ( r_value > max ) and ( r_value <= min_mux_10 ) ) then
       local to_Max = math.abs(r_value - max)
       local to_Min = math.abs(r_value - min_mux_10)
@@ -120,24 +118,32 @@ local function calc_Exx(Exx, r_value)
         R_Exx = tonumber(Exx[#Exx])
         R_Exx_Mux = Mux
       end
-      --print('  '..R_Exx..' * 10^ '..R_Exx_Mux)
-      return R_Exx * 10^R_Exx_Mux
-    elseif ( ( r_value > min ) and ( r_value <= max ) ) then
+      return R_Exx * 10^R_Exx_Mux  
+    end
+  
+    if ( ( r_value > min ) and ( r_value <= max ) ) then  
       for i = 1, (#Exx - 1) do
         local min = tonumber(Exx[i]) * 10^Mux
         local max = tonumber(Exx[i + 1]) * 10^Mux
-        local to_Min = math.abs(r_value - min)
-        local to_Max = math.abs(r_value - max)
-        local delta = max - min
-        --io.write('.')
-        if ( to_Min < delta ) then
-          R_Exx = tonumber(Exx[i])
-          R_Exx_Mux = Mux 
-          --print('  '..R_Exx..' * 10^ '..R_Exx_Mux)
-          return R_Exx * 10^R_Exx_Mux
+    
+        if( (min <= r_value ) and ( r_value <= max) ) then
+          local to_Min = math.abs(r_value - min)
+          local to_Max = math.abs(r_value - max)
+     
+          if ( to_Min < to_Max ) then
+            R_Exx = tonumber(Exx[i])
+            R_Exx_Mux = Mux 
+            return R_Exx * 10^R_Exx_Mux
+          else
+            R_Exx = tonumber(Exx[i + 1])
+            R_Exx_Mux = Mux 
+          return R_Exx * 10^R_Exx_Mux        
+        end        
         end
+      
       end
     end
+
     Mux = Mux + 1
   end
 end
@@ -153,7 +159,7 @@ local function calc_E24_plus_E96(r_value)
   local R_E96 = calc_Exx(E96, r_value) 
   local d_E24 = math.abs(r_value - R_E24)
   local d_E96 = math.abs(r_value - R_E96)
-  
+
   if(d_E24 <= d_E96) then
     return R_E24, 'E24'
   else
