@@ -21,7 +21,7 @@
 local calc_E24_E96 = {}
 
 local function version()
-  return 'v 1.0a'
+  return 'v 1.1a'
 end
 
 
@@ -114,11 +114,12 @@ local function calc_Exx(Exx, r_value)
       if ( to_Max > to_Min ) then
         R_Exx = tonumber(Exx[1])
         R_Exx_Mux = Mux + 1
+        return R_Exx * 10^R_Exx_Mux, Exx[1], R_Exx_Mux
       else
         R_Exx = tonumber(Exx[#Exx])
         R_Exx_Mux = Mux
+        return R_Exx * 10^R_Exx_Mux, Exx[#Exx], R_Exx_Mux
       end
-      return R_Exx * 10^R_Exx_Mux  
     end
   
     if ( ( r_value > min ) and ( r_value <= max ) ) then  
@@ -133,14 +134,13 @@ local function calc_Exx(Exx, r_value)
           if ( to_Min < to_Max ) then
             R_Exx = tonumber(Exx[i])
             R_Exx_Mux = Mux 
-            return R_Exx * 10^R_Exx_Mux
+            return R_Exx * 10^R_Exx_Mux, Exx[i], R_Exx_Mux
           else
             R_Exx = tonumber(Exx[i + 1])
             R_Exx_Mux = Mux 
-          return R_Exx * 10^R_Exx_Mux        
+            return R_Exx * 10^R_Exx_Mux, Exx[i + 1], R_Exx_Mux
+          end
         end        
-        end
-      
       end
     end
 
@@ -150,20 +150,21 @@ end
 
 
 local function calc_E24(r_value)
-  return calc_Exx(E24, r_value), 'E24'
+  local r_value, R_Exx, R_Exx_Mux = calc_Exx(E24, r_value)
+  return r_value, 'E24', R_Exx, R_Exx_Mux
 end
 
 
 local function calc_E24_plus_E96(r_value)
-  local R_E24 = calc_Exx(E24, r_value)
-  local R_E96 = calc_Exx(E96, r_value) 
+  local R_E24, R_E24_Mantiss, R_E24_Mux = calc_Exx(E24, r_value)
+  local R_E96, R_E96_Mantiss, R_E96_Mux = calc_Exx(E96, r_value) 
   local d_E24 = math.abs(r_value - R_E24)
   local d_E96 = math.abs(r_value - R_E96)
 
   if(d_E24 <= d_E96) then
-    return R_E24, 'E24'
+    return R_E24, 'E24', R_E24_Mantiss, R_E24_Mux
   else
-    return R_E96, 'E96'
+    return R_E96, 'E96', R_E96_Mantiss, R_E96_Mux
   end
 end
 

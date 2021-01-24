@@ -20,6 +20,8 @@
 
 
 local CR_Bourns_decode = {}
+local calc = require ('calc_E24_E96')
+
 
 local function version()
   local info = 'v 1.3 \t 2021 г.'
@@ -66,17 +68,6 @@ local function process_args()
   end
   return t
 end
-
-
-local E12 = {
-  '10', '12', '15', '18',
-  '22', '27',
-  '33', '39',
-  '47',
-  '56',
-  '68',
-  '82',
-}
 
 
 local E24 = {
@@ -152,8 +143,8 @@ local TCR_5_PERCENT = {
 
 
 local TOLERANCE = {
-  { 'F', '±1 %', 'Точность ±1 %'},
-  { 'J', '±5 %', 'Точность ±5 %'},
+  { 'F', '±1 %', 'Точность ±1 %', 1},
+  { 'J', '±5 %', 'Точность ±5 %', 5},
 }
 
 
@@ -180,6 +171,27 @@ local TERMINATION = {
   {'LF', 'Tin-plated (RoHS compliant)'},
   {'x', 'Не важно какой тип лужения'},
 }
+
+
+local function split(instr, sep)
+  local t = {}
+  for str in string.gmatch(instr, "([^"..sep.."]+)") do
+    table.insert(t, str)
+  end
+  return t
+end
+
+
+local function trim(instr)
+  return string.gsub(instr, "^%s*(.-)%s*$", "%1")
+end
+
+
+local function replace(str, what, with)
+  what = what:gsub("[%(%)%.%+%-%*%?%[%]%^%$%%]", "%%%1")
+  with = with:gsub("[%%]", "%%%%")
+  return str:gsub(what, with)
+end
 
 
 local function format_x(Value)
@@ -554,6 +566,282 @@ end
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function Resistance_Value_Decode(TOLERANCE_Num, Value)
+  local Value_str
+  local E_message = ''
+  local Value_E
+  local Value_float
+  local Mux
+  local finded = false
+  
+  print('Value = ', Value)
+  
+  Mux = Value:match('([МкОмkomMKO]+)')
+  Mux = Mux:gsub('[M]', 'М')
+  Mux = Mux:gsub('[kK]', 'к')
+  Mux = Mux:gsub('[oO]', 'О')
+  Mux = Mux:gsub('[m]', 'м')
+  
+  if( type(Mux) == nil ) then
+    Mux = 'Ом'
+  end
+  
+  if( #Mux == 0 ) then
+    Mux = 'Ом'
+  end  
+  
+  if( #Mux == 1 ) then
+    if ( Mux == 'к') then
+      Mux = 'кОм'
+    end
+    if ( Mux == 'М') then
+      Mux = 'МОм'
+    end 
+  end
+ 
+  
+  if( Mux ~= nil ) then
+    Value_E = Value:gsub('[МкОмkomMKO ]', '')
+    Value_E = Value_E:gsub(',', '.')
+    print('Value_E = ', Value_E)
+
+    for i = 1, #MUX do
+      if( Mux == MUX[i][3] ) then
+        Mux = MUX[i][2]
+        finded = true
+        break
+      end
+    end
+
+    if( finded == false) then 
+      E_message = E_message..'ERROR: Непонятная омность в номинале: "'..Value..'"\n'
+    end
+  else
+    if( finded == false) then 
+      E_message = E_message..'ERROR: Непонятная омность в номинале: "'..Value..'"\n'
+    end
+  end
+
+  if( finded == false )  then
+    return false, E_message
+  end
+
+
+  finded = false
+  Value_float = tonumber(Value_E) * Mux
+
+  print(Value_float)
+
+  local Value_float_true
+  if ( TOLERANCE_Num == 1 ) then -- 1%
+    Value_float_true, E, R_Mantiss, R_Mux = calc.calc_E24_plus_E96(Value_float)
+  elseif ( TOLERANCE_Num == 2 ) then -- 5%
+    Value_float_true, E, R_Mantiss, R_Mux = calc_E24(Value_float)
+  else
+    E_message = E_message..'ERROR: Не правильно задан допуск на номинал\n'
+    return false, E_message
+  end
+
+  if ( Value_float ~= Value_float_true) then
+    E_message = E_message..'WARNING: Ближайшее значение сопротивления подобрано из ряда '..E..'\n'
+  else
+    E_message = E_message..'INFO: Значение сопротивления полностью соответствует ряду '..E..'\n'
+  end
+
+  return true, E_message, Value_float_true, R_Mantiss, R_Mux
+end
+
+
+
+
+
+
+
+
+
+local function CR_Bourns_Code(Size, Value, Tolerance)
+  local Code = 'CR'
+  local Decode = '('
+  
+  local finded
+  local E_message = ''
+  local SIZE_Num
+  local TCR_Num
+  local TCR_1_PERCENT_Num
+  local TCR_5_PERCENT_Num
+  local TOLERANCE_Num
+  local MUX_Num
+  local PACKAGING_Num
+  local TERMINATION_Num
+
+  finded = false
+  Size = Size:gsub('%D', '')
+
+  if( Size ~= nil ) then
+    for i = 1, #SIZE do
+      if( Size == SIZE[i][1] ) then
+        Code = Code..SIZE[i][1]..'-'
+        SIZE_Num = i
+        finded = true
+        break
+      end
+    end
+    if( finded == false) then 
+      E_message = E_message..'ERROR: Непонятный типоразмер корпуса (мощность) в "'..Name..'"\n'
+    end
+  else
+    E_message = E_message..'ERROR: Непонятный типоразмер корпуса (мощность) в "'..Name..'"\n'
+  end
+  
+----------------------------------------------
+  finded = false
+  local Tolerance_
+
+  if( type(Tolerance) == 'number' ) then
+    Tolerance_ = Tolerance
+  elseif( type(Tolerance) == 'string' ) then
+    Tolerance_ = Tolerance:gsub('%%', '')
+    Tolerance_ = Tolerance_:gsub('%,', '.')
+    Tolerance_ = Tolerance_:gsub(' ', '')
+    Tolerance_ = Tolerance_:gsub('%a', '')
+    Tolerance_ = tonumber(Tolerance_)
+  else
+    E_message = E_message..'ERROR: Непонятный тип значения допуска\n'
+    return false, E_message
+  end
+  
+  TOLERANCE_Num = 1
+  while TOLERANCE_Num <= #TOLERANCE do
+    if( Tolerance_ == TOLERANCE[TOLERANCE_Num][4] ) then
+      finded = true
+      break
+    end
+    TOLERANCE_Num = TOLERANCE_Num + 1
+  end
+  
+  if( finded == false) then 
+    E_message = E_message..'ERROR: Непонятный допуск номинала в "'..Tolerance..'"\n'
+    return false, E_message
+  end
+
+  Code = Code..TOLERANCE[TOLERANCE_Num][1]
+
+----------------------------------------------  
+  local Result, E_R_message, Value_float, R_Mantiss, R_Mux = Resistance_Value_Decode(TOLERANCE_Num, Value)
+  
+  print(E_R_message)
+  
+  print('Value_float = ', Value_float)
+  print('R_Mantiss = ', R_Mantiss)
+  print('R_Mux = ', R_Mux)
+  
+----------------------------------------------
+  print( type(TCR_1_PERCENT[SIZE_Num]) )
+  print( #(TCR_1_PERCENT[SIZE_Num]) )
+  print(TCR_1_PERCENT[SIZE_Num][2])
+
+
+  if( TOLERANCE_Num == 1 ) then  -- 1%
+    for i = 2, #TCR_1_PERCENT[SIZE_Num] do
+      local fields = split(TCR_1_PERCENT[SIZE_Num][i], ';') 
+      min_val = fields[1]
+      max_val = fields[2]
+      TCR_val = fields[3]
+      min_val = min_val:gsub('%D', '')
+      max_val = max_val:gsub('%D', '')
+      min_val = tonumber(min_val)
+      max_val = tonumber(max_val)
+      print(min_val)
+      print(Value_float)
+      if( (min_val <= Value_float) and (Value_float < max_val) ) then
+        for j = 1, #TCR do
+          if ( TCR[j][1] == TCR_val ) then
+            TCR_Num = j
+            break;
+          end
+        end
+        break;
+      end
+    end
+    
+    
+  --   {'0402' , '1<=;<10;/'  , '10<=;<1000000;X', '1000000<=;<10000000;W'},
+  
+  elseif( TOLERANCE_Num == 2 ) then  -- 5%
+  -- TCR_5_PERCENT[SIZE_Num][]
+  
+  else
+  
+  
+  end
+  
+  Code = Code..TCR[TCR_Num][1]..'-'
+  print(Code)
+  
+  
+-------------------------
+
+
+  local R_Code
+  if( TOLERANCE_Num == 1 ) then  -- 1%
+    if ( Value_float < 100 ) then
+      R_Code = string.insert(R_Mantiss, 'R', (#R_Mantiss - 1))
+    else
+      R_Code = R_Mantiss..MUX[R_Mux][1]
+    end
+  elseif( TOLERANCE_Num == 2 ) then  -- 5%
+    if ( Value_float < 10 ) then
+      R_Code = string.insert(R_Mantiss, 'R', (#R_Mantiss - 1))
+    else
+      R_Code = R_Mantiss..MUX[R_Mux][1]
+    end  
+  else
+  
+  end
+  
+  Code = Code..R_Code
+  print(Code)
+  
+---------------------------  
+  
+  
+  
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 local function exec(fin, fout, flog)
 
 end
@@ -597,6 +885,7 @@ return {
   version = version,
   info = info,
   Decode = CR_Bourns_Decode,
+  Code = CR_Bourns_Code,
 }
 
 
