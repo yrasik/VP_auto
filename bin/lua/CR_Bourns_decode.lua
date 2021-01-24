@@ -632,6 +632,9 @@ local function Resistance_Value_Decode(TOLERANCE_Num, Value)
       end
     end
 
+    print('Mux =', Mux)
+
+
     if( finded == false) then 
       E_message = E_message..'ERROR: Непонятная омность в номинале: "'..Value..'"\n'
     end
@@ -752,7 +755,14 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
   
   print('Value_float = ', Value_float)
   print('R_Mantiss = ', R_Mantiss)
-  print('R_Mux = ', R_Mux)
+  print('R_Mux = ', 10^R_Mux)
+  
+  -----
+  !!!!!
+  
+  
+  
+  
   
 ----------------------------------------------
   print( type(TCR_1_PERCENT[SIZE_Num]) )
