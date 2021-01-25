@@ -108,13 +108,19 @@ local SIZE = {
   {'2512' , '6.3x3.1x0.6',   'Power rating at 70 ∞C 1 W',     1,      '1 ¬т', '-55...+155', '200 ¬', '2 A'},
 }
 
-local TCR = {
-  {'X', 'X', '±100'},
-  {'W', 'W', '±200'},
-  {'V', 'V', '±300'},
-  {'Z', 'Z', '±400'},
-  {'/', '/', '-200 to +500'},
+
+local PACKAGING = {
+  {'01005', 'G', 'Paper Tape (10,000 pcs.) on 7 Ф Plastic Reel'},
+  {'0201' , 'G', 'Paper Tape (10,000 pcs.) on 7 Ф Plastic Reel'},
+  {'0402' , 'G', 'Paper Tape (10,000 pcs.) on 7 Ф Plastic Reel'},
+  {'0603' , 'E', 'Paper Tape (5,000 pcs.) on 7 Ф Plastic Reel'},
+  {'0805' , 'E', 'Paper Tape (5,000 pcs.) on 7 Ф Plastic Reel'},
+  {'1206' , 'E', 'Paper Tape (5,000 pcs.) on 7 Ф Plastic Reel'},
+  {'1210' , 'E', 'Paper Tape (5,000 pcs.) on 7 Ф Plastic Reel'},
+  {'2010' , 'E', 'Paper Tape (5,000 pcs.) on 7 Ф Plastic Reel'},
+  {'2512' , 'E', 'Paper Tape (5,000 pcs.) on 7 Ф Plastic Reel'},
 }
+
 
 local TCR_1_PERCENT = {
   {'01005', '10<=;<100;V', '100<=;<1000000;W' },
@@ -148,6 +154,15 @@ local TOLERANCE = {
 }
 
 
+local TCR = {
+  {'X', 'X', '±100'},
+  {'W', 'W', '±200'},
+  {'V', 'V', '±300'},
+  {'Z', 'Z', '±400'},
+  {'/', '/', '-200 to +500'},
+}
+
+
 local MUX = {
   {'0', 1, 'ќм'},
   {'1', 10, 'ќм'},
@@ -160,16 +175,9 @@ local MUX = {
 }
 
 
-local PACKAGING = {
-  {'G', 'Paper Tape (10,000 pcs.) on 7 Ф Plastic Reel', 'CR01005 CR0201 CR0402'},
-  {'E', 'Paper Tape (5,000 pcs.) on 7 Ф Plastic Reel', 'CR0603 CR0805 CR1206 CR2010 CR2512'},
-  {'x', 'Ќе важно кака€ упаковка'},
-}
-
-
 local TERMINATION = {
   {'LF', 'Tin-plated (RoHS compliant)'},
-  {'x', 'Ќе важно какой тип лужени€'},
+--  {'x', 'Ќе важно какой тип лужени€'},
 }
 
 
@@ -658,7 +666,7 @@ local function Resistance_Value_Decode(TOLERANCE_Num, Value)
   if ( TOLERANCE_Num == 1 ) then -- 1%
     Value_float_true, E, R_Mantiss, R_Mux = calc.calc_E24_plus_E96(Value_float)
   elseif ( TOLERANCE_Num == 2 ) then -- 5%
-    Value_float_true, E, R_Mantiss, R_Mux = calc_E24(Value_float)
+    Value_float_true, E, R_Mantiss, R_Mux = calc.calc_E24(Value_float)
   else
     E_message = E_message..'ERROR: Ќе правильно задан допуск на номинал\n'
     return false, E_message
@@ -757,8 +765,15 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
   print('R_Mantiss = ', R_Mantiss)
   print('R_Mux = ', 10^R_Mux)
   
-  -----
-  !!!!!
+  
+  R_Mux = 10^R_Mux
+    for i = 1, #MUX do
+      if( R_Mux == MUX[i][2] ) then
+        finded = true
+        MUX_Num = i
+        break
+      end
+    end
   
   
   
@@ -816,22 +831,31 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
     if ( Value_float < 100 ) then
       R_Code = string.insert(R_Mantiss, 'R', (#R_Mantiss - 1))
     else
-      R_Code = R_Mantiss..MUX[R_Mux][1]
+      R_Code = R_Mantiss..MUX[MUX_Num][1]
     end
   elseif( TOLERANCE_Num == 2 ) then  -- 5%
     if ( Value_float < 10 ) then
       R_Code = string.insert(R_Mantiss, 'R', (#R_Mantiss - 1))
     else
-      R_Code = R_Mantiss..MUX[R_Mux][1]
+      R_Code = R_Mantiss..MUX[MUX_Num][1]
     end  
   else
   
   end
   
-  Code = Code..R_Code
+  Code = Code..R_Code..PACKAGING[SIZE_Num][2]..TERMINATION[1][1]
   print(Code)
   
 ---------------------------  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   
