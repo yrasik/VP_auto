@@ -784,10 +784,18 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
   print( #(TCR_1_PERCENT[SIZE_Num]) )
   print(TCR_1_PERCENT[SIZE_Num][2])
 
-
+  local tcr
   if( TOLERANCE_Num == 1 ) then  -- 1%
-    for i = 2, #TCR_1_PERCENT[SIZE_Num] do
-      local fields = split(TCR_1_PERCENT[SIZE_Num][i], ';') 
+    tcr = TCR_1_PERCENT[SIZE_Num]
+  elseif( TOLERANCE_Num == 2 ) then  -- 5%
+    tcr = TCR_5_PERCENT[SIZE_Num]
+  else
+  
+  end
+  
+  
+    for i = 2, #tcr do
+      local fields = split(tcr[i], ';') 
       min_val = fields[1]
       max_val = fields[2]
       TCR_val = fields[3]
@@ -806,18 +814,12 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
         end
         break;
       end
-    end
-    
-    
+    end  
   --   {'0402' , '1<=;<10;/'  , '10<=;<1000000;X', '1000000<=;<10000000;W'},
   
-  elseif( TOLERANCE_Num == 2 ) then  -- 5%
-  -- TCR_5_PERCENT[SIZE_Num][]
-  
-  else
   
   
-  end
+  
   
   Code = Code..TCR[TCR_Num][1]..'-'
   print(Code)
@@ -829,13 +831,13 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
   local R_Code
   if( TOLERANCE_Num == 1 ) then  -- 1%
     if ( Value_float < 100 ) then
-      R_Code = string.insert(R_Mantiss, 'R', (#R_Mantiss - 1))
+      R_Code = R_Mantiss:sub(1, (#R_Mantiss - 1))..'R'..R_Mantiss:sub(#R_Mantiss)
     else
       R_Code = R_Mantiss..MUX[MUX_Num][1]
     end
   elseif( TOLERANCE_Num == 2 ) then  -- 5%
     if ( Value_float < 10 ) then
-      R_Code = string.insert(R_Mantiss, 'R', (#R_Mantiss - 1))
+      R_Code = R_Mantiss:sub(1, (#R_Mantiss - 1))..'R'..R_Mantiss:sub(#R_Mantiss)
     else
       R_Code = R_Mantiss..MUX[MUX_Num][1]
     end  
