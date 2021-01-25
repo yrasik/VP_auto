@@ -662,6 +662,19 @@ local function Resistance_Value_Decode(TOLERANCE_Num, Value)
 
   print(Value_float)
 
+  if( Value_float == 0 ) then  -- Нулевой резистор
+    if ( TOLERANCE_Num == 1 ) then -- 1%
+      E_message = E_message..'ERROR: Не правильно задан допуск на номинал нулевого резистора\n'
+      return false, E_message    
+    end
+    
+    if ( TOLERANCE_Num == 2 ) then -- 5%
+      E_message = E_message..'INFO: Нулевой резистор\n'
+      return true, E_message, 0, '00', 0
+    end
+  end
+
+
   local Value_float_true
   if ( TOLERANCE_Num == 1 ) then -- 1%
     Value_float_true, E, R_Mantiss, R_Mux = calc.calc_E24_plus_E96(Value_float)
@@ -776,7 +789,7 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
     end
   
   
-  
+  print ('MUX_Num = ', MUX_Num)
   
   
 ----------------------------------------------
@@ -794,6 +807,9 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
   end
   
   
+  if( Value_float == 0 ) then
+    TCR_Num = 5 -- '/'
+  else
     for i = 2, #tcr do
       local fields = split(tcr[i], ';') 
       min_val = fields[1]
@@ -809,17 +825,17 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
         for j = 1, #TCR do
           if ( TCR[j][1] == TCR_val ) then
             TCR_Num = j
-            break;
+            break
           end
         end
-        break;
+        break
       end
-    end  
-  --   {'0402' , '1<=;<10;/'  , '10<=;<1000000;X', '1000000<=;<10000000;W'},
+    end
+  end
   
   
   
-  
+  print ('TCR_Num = ', TCR_Num)
   
   Code = Code..TCR[TCR_Num][1]..'-'
   print(Code)
@@ -830,13 +846,17 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
 
   local R_Code
   if( TOLERANCE_Num == 1 ) then  -- 1%
-    if ( Value_float < 100 ) then
+    if ( Value_float == 0 ) then
+      -- ERROR
+    elseif ( Value_float < 100 ) then
       R_Code = R_Mantiss:sub(1, (#R_Mantiss - 1))..'R'..R_Mantiss:sub(#R_Mantiss)
     else
       R_Code = R_Mantiss..MUX[MUX_Num][1]
     end
   elseif( TOLERANCE_Num == 2 ) then  -- 5%
-    if ( Value_float < 10 ) then
+    if ( Value_float == 0 ) then
+      R_Code = R_Mantiss..'0'
+    elseif ( Value_float < 10 ) then
       R_Code = R_Mantiss:sub(1, (#R_Mantiss - 1))..'R'..R_Mantiss:sub(#R_Mantiss)
     else
       R_Code = R_Mantiss..MUX[MUX_Num][1]
