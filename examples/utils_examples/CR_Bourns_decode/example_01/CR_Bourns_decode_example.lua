@@ -39,12 +39,25 @@ local CR = require ('CR_Bourns_decode')
 --local Res, Mess = CR.Code('0805', '2,42 kOm','1%')
 
 
-print('---------------------------------')
-local Res, Mess = CR.Code('0805', '20 kOm','1%')
+--print('---------------------------------')
+--local Res, Mess = CR.Code('0805', '20 kOm','1%')
+
+--print('---------------------------------')
+--local Res, Mess = CR.Code('0805', '24,2 kOm','1%')
+
+
+--print('---------------------------------')
+--local Res, Mess = CR.Code('0805', '200 kOm','1%')
+
+--print('---------------------------------')
+--local Res, Mess = CR.Code('0805', '242 kOm','1%')
+
 
 print('---------------------------------')
-local Res, Mess = CR.Code('0805', '24,2 kOm','1%')
+local Res, Mess = CR.Code('0805', '2 MOm','1%')
 
+print('---------------------------------')
+local Res, Mess = CR.Code('0805', '2,42 MOm','1%')
 
 
 
