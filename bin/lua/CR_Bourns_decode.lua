@@ -865,11 +865,9 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
       print('ERROR:  1%  < 10 Om')  
     elseif( Value_float < 100 ) then  -- ok
       if( #R_Mantiss == 2 ) then  -- E24
-        R_Code = R_Mantiss
-        R_Code = string.format('%dR0', R_Code)
+        R_Code = R_Mantiss..'R0'
         
         R_Decode = R_Mantiss
-        R_Decode = string.format('%d', R_Decode)
         R_Decode = R_Decode..' '..'Îì'
       else  -- E96
         R_Code = R_Mantiss/10
@@ -1013,6 +1011,61 @@ MUX[MUX_Num][3]
     
   elseif( TOLERANCE_Num == 2 ) then  -- 5%
     if ( Value_float == 0 ) then
+     ---- R_Code = R_Mantiss..'0'
+      
+      
+    elseif ( Value_float < 10 ) then  
+      R_Code = R_Mantiss/10
+      R_Code = string.format('%.01f', R_Code) 
+      R_Code = R_Code:gsub('%.', 'R')
+      
+      R_Decode = R_Mantiss/10
+      R_Decode = string.format('%.01f', R_Decode)
+      R_Decode = R_Decode:gsub('%.', ',')
+      R_Decode = R_Decode:gsub(',0$', '')
+      R_Decode = R_Decode..' '..'Îì'      
+    elseif ( Value_float < 100 ) then  
+      R_Code = R_Mantiss..'0'
+        
+      R_Decode = R_Mantiss
+      R_Decode = R_Decode..' '..'Îì'
+    elseif ( Value_float < 1000 ) then  
+      R_Code = R_Mantiss..'1'
+        
+      R_Decode = R_Mantiss..'0'
+      R_Decode = R_Decode..' '..'Îì'
+    elseif ( Value_float < 10000 ) then  
+      R_Code = R_Mantiss..'2'
+
+      R_Decode = R_Mantiss/10
+      R_Decode = string.format('%.01f', R_Decode)
+      R_Decode = R_Decode:gsub('%.', ',')
+      R_Decode = R_Decode:gsub(',0$', '')
+      R_Decode = R_Decode..' '..'êÎì'
+    elseif ( Value_float < 100000 ) then 
+      R_Code = R_Mantiss..'3'
+        
+      R_Decode = R_Mantiss..'0'
+      R_Decode = R_Decode..' '..'êÎì'
+    elseif ( Value_float < 1000000 ) then
+      R_Code = R_Mantiss..'4'
+
+      R_Decode = R_Mantiss..'0'
+      R_Decode = R_Decode..' '..'êÎì'
+    elseif ( Value_float < 10000000 ) then
+      R_Code = R_Mantiss..'5'
+
+      R_Decode = R_Mantiss/10
+      R_Decode = string.format('%.01f', R_Decode)
+      R_Decode = R_Decode:gsub('%.', ',')
+      R_Decode = R_Decode:gsub(',0$', '')
+      R_Decode = R_Decode..' '..'ÌÎì'
+    else
+      print('ERROR: Out of Range')
+    end    
+  
+--[==[  
+    if ( Value_float == 0 ) then
       R_Code = R_Mantiss..'0'
     elseif ( Value_float < 10 ) then
       R_Code = R_Mantiss:sub(1, (#R_Mantiss - 1))..'R'..R_Mantiss:sub(#R_Mantiss)
@@ -1025,6 +1078,11 @@ MUX[MUX_Num][3]
         R_Decode = R_Mantiss
       end
     end  
+ ]==]   
+    
+    
+    
+    
   else
   
   end
