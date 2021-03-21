@@ -164,14 +164,14 @@ local TCR = {
 
 
 local MUX = {
-  {'0', 1, 'Îì'},
-  {'1', 10, 'Îì'},
-  {'2', 100, 'Îì'},
-  {'3', 1000, 'êÎì'},
-  {'4', 10000, 'êÎì'},
-  {'5', 100000, 'êÎì'},
-  {'6', 1000000, 'ÌÎì'},
-  {'7', 10000000, 'ÌÎì'},
+  {'0', 1, 'Îì', false},
+  {'1', 10, 'Îì', true},
+  {'2', 100, 'Îì', false},
+  {'3', 1000, 'êÎì', false},
+  {'4', 10000, 'êÎì', true},
+  {'5', 100000, 'êÎì', false},
+  {'6', 1000000, 'ÌÎì', false},
+  {'7', 10000000, 'ÌÎì', true},
 }
 
 
@@ -704,7 +704,7 @@ end
 
 local function CR_Bourns_Code(Size, Value, Tolerance)
   local Code = 'CR'
-  local Decode = '('
+  local Decode = '(CR'
   
   local finded
   local E_message = ''
@@ -724,6 +724,7 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
     for i = 1, #SIZE do
       if( Size == SIZE[i][1] ) then
         Code = Code..SIZE[i][1]..'-'
+        Decode = Decode..SIZE[i][1]
         SIZE_Num = i
         finded = true
         break
@@ -768,7 +769,8 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
   end
 
   Code = Code..TOLERANCE[TOLERANCE_Num][1]
-
+  Decode = Decode..TOLERANCE[TOLERANCE_Num][2]
+  
 ----------------------------------------------  
   local Result, E_R_message, Value_float, R_Mantiss, R_Mux = Resistance_Value_Decode(TOLERANCE_Num, Value)
   
@@ -776,7 +778,7 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
   
   print('Value_float = ', Value_float)
   print('R_Mantiss = ', R_Mantiss)
-  print('R_Mux = ', 10^R_Mux)
+ -- print('R_Mux = ', 10^R_Mux)
   
   
   R_Mux = 10^R_Mux
@@ -789,13 +791,13 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
     end
   
   
-  print ('MUX_Num = ', MUX_Num)
+ -- print ('MUX_Num = ', MUX_Num)
   
   
 ----------------------------------------------
-  print( type(TCR_1_PERCENT[SIZE_Num]) )
-  print( #(TCR_1_PERCENT[SIZE_Num]) )
-  print(TCR_1_PERCENT[SIZE_Num][2])
+----  print( type(TCR_1_PERCENT[SIZE_Num]) )
+--  print( #(TCR_1_PERCENT[SIZE_Num]) )
+--  print(TCR_1_PERCENT[SIZE_Num][2])
 
   local tcr
   if( TOLERANCE_Num == 1 ) then  -- 1%
@@ -819,8 +821,8 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
       max_val = max_val:gsub('%D', '')
       min_val = tonumber(min_val)
       max_val = tonumber(max_val)
-      print(min_val)
-      print(Value_float)
+     -- print(min_val)
+    --  print(Value_float)
       if( (min_val <= Value_float) and (Value_float < max_val) ) then
         for j = 1, #TCR do
           if ( TCR[j][1] == TCR_val ) then
@@ -835,24 +837,112 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
   
   
   
-  print ('TCR_Num = ', TCR_Num)
+ -- print ('TCR_Num = ', TCR_Num)
   
   Code = Code..TCR[TCR_Num][1]..'-'
-  print(Code)
+  Decode = Decode..TCR[TCR_Num][1]..'-'
+ -- print(Code)
   
   
 -------------------------
 
 
+
+
+
+
+
+
+
+
+
+
+
   local R_Code
+  local R_Decode  = ''
   if( TOLERANCE_Num == 1 ) then  -- 1%
+    if( Value_float < 10 ) then
+    print('ERROR:  1%  < 10 Om')
+    
+--[==[    
+      if( #R_Mantiss == 2 ) then  --ok
+        R_Code = R_Mantiss/10
+        R_Code = string.format('%.02f', R_Code) 
+        R_Code = R_Code:gsub('%.', 'R')
+        R_Decode = R_Mantiss/10
+        R_Decode = string.format('%.01f', R_Decode)
+        R_Decode = R_Decode:gsub('%.', ',')
+        R_Decode = R_Decode:gsub(',0$', '')
+        R_Decode = R_Decode..' '..'Îì'    
+      else  --ok
+        R_Code = R_Mantiss/100
+        R_Code = string.format('%.02f', R_Code)
+        R_Code = R_Code:gsub('%.', 'R')
+        R_Decode = R_Mantiss/100
+        R_Decode = string.format('%.02f', R_Decode)
+        R_Decode = R_Decode:gsub('%.', ',')
+        R_Decode = R_Decode:gsub(',00$', '')
+        R_Decode = R_Decode:gsub('0$', '')
+        R_Decode = R_Decode..' '..'Îì'
+      end   
+]==]      
+    elseif( Value_float < 100 ) then  -- ok
+      if( #R_Mantiss == 2 ) then
+    
+    
+      else
+        R_Code = R_Mantiss/10
+        R_Code = string.format('%.02f', R_Code)
+        R_Code = R_Code:gsub('%.', 'R')  
+        R_Decode = R_Mantiss/10
+        R_Decode = string.format('%.01f', R_Decode)
+        R_Decode = R_Decode:gsub('%.', ',')
+        R_Decode = R_Decode:gsub(',0$', '')
+        R_Decode = R_Decode..' '..'Îì'
+      end      
+    elseif( Value_float < 1000 ) then
+
+
+
+    elseif( Value_float < 10000 ) then
+ 
+  
+  
+    elseif( Value_float < 100000 ) then  --ok
+      R_Code = R_Mantiss..'2'
+      R_Decode = R_Mantiss/10
+      R_Decode = string.format('%.01f', R_Decode)
+      R_Decode = R_Decode:gsub('%.', ',')
+      R_Decode = R_Decode:gsub(',0$', '')
+      R_Decode = R_Decode..' '..'êÎì'
+    elseif( Value_float < 1000000 ) then
+    
+    
+    else
+    
+    end
+  
+  
+--[==[  
+R_Decode
+MUX[MUX_Num][3]
+
+
     if ( Value_float == 0 ) then
       -- ERROR
     elseif ( Value_float < 100 ) then
       R_Code = R_Mantiss:sub(1, (#R_Mantiss - 1))..'R'..R_Mantiss:sub(#R_Mantiss)
     else
       R_Code = R_Mantiss..MUX[MUX_Num][1]
+      
+      if( MUX[MUX_Num][3] == false )  then
+        R_Decode = R_Mantiss:sub(1, (#R_Mantiss - 1))..','..R_Mantiss:sub(#R_Mantiss)
+      else
+        R_Decode = R_Mantiss
+      end
     end
+]==]    
+    
   elseif( TOLERANCE_Num == 2 ) then  -- 5%
     if ( Value_float == 0 ) then
       R_Code = R_Mantiss..'0'
@@ -860,14 +950,26 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
       R_Code = R_Mantiss:sub(1, (#R_Mantiss - 1))..'R'..R_Mantiss:sub(#R_Mantiss)
     else
       R_Code = R_Mantiss..MUX[MUX_Num][1]
+      
+      if( MUX[MUX_Num][3] == false ) then
+        R_Decode = R_Mantiss:sub(1, (#R_Mantiss - 1))..','..R_Mantiss:sub(#R_Mantiss)
+      else
+        R_Decode = R_Mantiss
+      end
     end  
   else
   
   end
   
-  Code = Code..R_Code..PACKAGING[SIZE_Num][2]..TERMINATION[1][1]
-  print(Code)
   
+  
+  
+  
+  Code = Code..R_Code..PACKAGING[SIZE_Num][2]..TERMINATION[1][1]
+  --Decode = Decode..R_Decode..' '..MUX[MUX_Num][3]..')'
+  Decode = Decode..R_Decode..')'
+  print(Code)
+  print(Decode)
 ---------------------------  
   
   
