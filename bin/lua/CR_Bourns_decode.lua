@@ -24,7 +24,7 @@ local calc = require ('calc_E24_E96')
 
 
 local function version()
-  local info = 'v 1.3 \t 2021 г.'
+  local info = 'v 1.4 \t 2021 г.'
   return info
 end
 
@@ -46,28 +46,34 @@ end
 
 local function process_args()
   -- get args set by user in command line
-  local t, i = {}, 1
+  local t, i = {},1
   while i < #arg do
     local a = arg[i]
-    if a == "--fin" then
-      t.fin_name = arg[i + 1]
+    if a == "--version" then
+      t.version = true
       i = i + 2
-    elseif a == "--fin_names_lua" then
-      t.fin_names_lua = arg[i + 1]
+    elseif a == "--info" then
+      t.info = true
       i = i + 2
-    elseif a == "--fout" then
-      t.fout_name = arg[i + 1]
+    elseif a == "--decode" then
+      t.decode = arg[i + 1]
       i = i + 2
-    elseif a == "--flog" then
-      t.flog_name = arg[i + 1]
+    elseif a == "--code" then
+      t.code = arg[i + 1]
       i = i + 2
     else
-      print(usage.."Bad flag: "..a)
+      print(info().."Bad flag: "..a)
       os.exit(-1)
     end
   end
   return t
 end
+
+
+
+
+
+
 
 
 local E24 = {
@@ -365,7 +371,7 @@ local function Resistance_Value_Decode(TOLERANCE_Num, Value)
 
   end
 
-  return finded_E, E_message, Value_str
+  return finded_E, E_message, Value_float, Value_str
 end
 
 
@@ -403,6 +409,7 @@ local function CR_Bourns_Decode(Name)
   local TERMINATION_Num
   local name = Name
   local Value_Decode
+  local Value_float
 
   local finded = false
   local E_message = ''
@@ -502,7 +509,7 @@ local function CR_Bourns_Decode(Name)
   local Value = name:match('^%-([R%d][R%d][R%d][R%d]*[R%d]*)')
   if( Value ~= nil ) then
     name = name:sub( 2 + #Value)
-    finded, E_message, Value_Decode = Resistance_Value_Decode(TOLERANCE_Num, Value)
+    finded, E_message, Value_float, Value_Decode = Resistance_Value_Decode(TOLERANCE_Num, Value)
     if( finded == true ) then
       Decode = Decode..'-'..Value_Decode..')'
     end
@@ -521,7 +528,7 @@ local function CR_Bourns_Decode(Name)
     name = name:sub( 1 + #Packaging)
     PACKAGING_Num = 1
     while PACKAGING_Num <= #PACKAGING do
-      if( Packaging == PACKAGING[PACKAGING_Num][1] ) then
+      if( Packaging == PACKAGING[PACKAGING_Num][2] ) then
         finded = true
         break
       end
@@ -569,7 +576,28 @@ local function CR_Bourns_Decode(Name)
   local Package_Size = SIZE[SIZE_Num][2]
   local Op_Temp = SIZE[SIZE_Num][6]
 
-  return true, E_message, Decode, Parameters, Package_Type, Package_Size, Op_Temp
+ -- return true, E_message, Decode, Parameters, Package_Type, Package_Size, Op_Temp
+
+  local attr_for_human = {
+    Decode = Decode,
+    Parameters = Parameters,
+    Package_Type = Package_Type,
+    Package_Size = Package_Size,
+    Op_Temp = Op_Temp
+  }  
+
+  local attr_for_compare = {
+    Value_float = Value_float,
+    Tolerance = TOLERANCE[TOLERANCE_Num][4],
+    Size = SIZE[SIZE_Num][4]
+  }
+
+
+  return 
+    true,
+    E_message,
+    attr_for_human,
+    attr_for_compare
 end
 
 
@@ -601,7 +629,7 @@ local function Resistance_Value_Decode(TOLERANCE_Num, Value)
   local Mux
   local finded = false
   
-  print('Value = ', Value)
+ -- print('Value = ', Value)
   
   Mux = Value:match('([ћкќмkomMKO]+)')
   Mux = Mux:gsub('[M]', 'ћ')
@@ -630,7 +658,7 @@ local function Resistance_Value_Decode(TOLERANCE_Num, Value)
   if( Mux ~= nil ) then
     Value_E = Value:gsub('[ћкќмkomMKO ]', '')
     Value_E = Value_E:gsub(',', '.')
-    print('Value_E = ', Value_E)
+   -- print('Value_E = ', Value_E)
 
     for i = 1, #MUX do
       if( Mux == MUX[i][3] ) then
@@ -640,7 +668,7 @@ local function Resistance_Value_Decode(TOLERANCE_Num, Value)
       end
     end
 
-    print('Mux =', Mux)
+   -- print('Mux =', Mux)
 
 
     if( finded == false) then 
@@ -660,7 +688,7 @@ local function Resistance_Value_Decode(TOLERANCE_Num, Value)
   finded = false
   Value_float = tonumber(Value_E) * Mux
 
-  print(Value_float)
+ -- print(Value_float)
 
   if( Value_float == 0 ) then  -- Ќулевой резистор
     if ( TOLERANCE_Num == 1 ) then -- 1%
@@ -774,10 +802,10 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
 ----------------------------------------------  
   local Result, E_R_message, Value_float, R_Mantiss, R_Mux = Resistance_Value_Decode(TOLERANCE_Num, Value)
   
-  print(E_R_message)
+ -- print(E_R_message)
   
-  print('Value_float = ', Value_float)
-  print('R_Mantiss = ', R_Mantiss)
+ -- print('Value_float = ', Value_float)
+ -- print('R_Mantiss = ', R_Mantiss)
  -- print('R_Mux = ', 10^R_Mux)
   
   
@@ -816,13 +844,15 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
       local fields = split(tcr[i], ';') 
       min_val = fields[1]
       max_val = fields[2]
+      --print('fields[2] ='..fields[2])
       TCR_val = fields[3]
       min_val = min_val:gsub('%D', '')
       max_val = max_val:gsub('%D', '')
       min_val = tonumber(min_val)
       max_val = tonumber(max_val)
-     -- print(min_val)
-    --  print(Value_float)
+      --print(min_val)
+      --print(max_val)
+      --print(Value_float)
       if( (min_val <= Value_float) and (Value_float < max_val) ) then
         for j = 1, #TCR do
           if ( TCR[j][1] == TCR_val ) then
@@ -845,24 +875,32 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
   
   
 -------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
   local R_Code
   local R_Decode  = ''
   if( TOLERANCE_Num == 1 ) then  -- 1%
-    if( Value_float < 10 ) then
-      print('ERROR:  1%  < 10 Om')  
+    if( Value_float < 10 ) then 
+      if( #R_Mantiss == 2 ) then  -- E24
+        R_Code = R_Mantiss/10
+        R_Code = string.format('%.02f', R_Code)
+        R_Code = R_Code:gsub('%.', 'R')
+    
+        R_Decode = R_Mantiss/10
+        R_Decode = string.format('%.01f', R_Decode)
+        R_Decode = R_Decode:gsub('%.', ',')
+        R_Decode = R_Decode:gsub(',0$', '')
+        R_Decode = R_Decode..' '..'ќм'
+      else  -- E96
+        R_Code = R_Mantiss/100
+        R_Code = string.format('%.02f', R_Code)
+        R_Code = R_Code:gsub('%.', 'R')
+
+        R_Decode = R_Mantiss/100
+        R_Decode = string.format('%.02f', R_Decode)
+        R_Decode = R_Decode:gsub('%.', ',')
+        R_Decode = R_Decode:gsub(',00$', '')
+        R_Decode = R_Decode:gsub('0$', '')
+        R_Decode = R_Decode..' '..'ќм'
+      end 
     elseif( Value_float < 100 ) then  -- ok
       if( #R_Mantiss == 2 ) then  -- E24
         R_Code = R_Mantiss..'R0'
@@ -960,60 +998,15 @@ local function CR_Bourns_Code(Size, Value, Tolerance)
         R_Decode = R_Decode..' '..'ћќм'
       end 
     else
-      print('ERROR: Out of Range')
-    end
-  
-  
---[==[  
-
-   
-      if( #R_Mantiss == 2 ) then  --ok
-        R_Code = R_Mantiss/10
-        R_Code = string.format('%.02f', R_Code) 
-        R_Code = R_Code:gsub('%.', 'R')
-        R_Decode = R_Mantiss/10
-        R_Decode = string.format('%.01f', R_Decode)
-        R_Decode = R_Decode:gsub('%.', ',')
-        R_Decode = R_Decode:gsub(',0$', '')
-        R_Decode = R_Decode..' '..'ќм'    
-      else  --ok
-        R_Code = R_Mantiss/100
-        R_Code = string.format('%.02f', R_Code)
-        R_Code = R_Code:gsub('%.', 'R')
-        R_Decode = R_Mantiss/100
-        R_Decode = string.format('%.02f', R_Decode)
-        R_Decode = R_Decode:gsub('%.', ',')
-        R_Decode = R_Decode:gsub(',00$', '')
-        R_Decode = R_Decode:gsub('0$', '')
-        R_Decode = R_Decode..' '..'ќм'
-      end   
-  
-
-
-R_Decode
-MUX[MUX_Num][3]
-
-
-    if ( Value_float == 0 ) then
-      -- ERROR
-    elseif ( Value_float < 100 ) then
-      R_Code = R_Mantiss:sub(1, (#R_Mantiss - 1))..'R'..R_Mantiss:sub(#R_Mantiss)
-    else
-      R_Code = R_Mantiss..MUX[MUX_Num][1]
-      
-      if( MUX[MUX_Num][3] == false )  then
-        R_Decode = R_Mantiss:sub(1, (#R_Mantiss - 1))..','..R_Mantiss:sub(#R_Mantiss)
-      else
-        R_Decode = R_Mantiss
-      end
-    end
-]==]    
-    
+      ERR_message = 'ERROR: Out of Range'
+      return false, ERR_message
+    end    
   elseif( TOLERANCE_Num == 2 ) then  -- 5%
     if ( Value_float == 0 ) then
      ---- R_Code = R_Mantiss..'0'
-      
-      
+    elseif ( Value_float < 1 ) then  
+      ERR_message = 'ERROR: Out of Range : 5%  < 1 Om'
+      return false, ERR_message
     elseif ( Value_float < 10 ) then  
       R_Code = R_Mantiss/10
       R_Code = string.format('%.01f', R_Code) 
@@ -1045,7 +1038,7 @@ MUX[MUX_Num][3]
     elseif ( Value_float < 100000 ) then 
       R_Code = R_Mantiss..'3'
         
-      R_Decode = R_Mantiss..'0'
+      R_Decode = R_Mantiss
       R_Decode = R_Decode..' '..'кќм'
     elseif ( Value_float < 1000000 ) then
       R_Code = R_Mantiss..'4'
@@ -1061,68 +1054,46 @@ MUX[MUX_Num][3]
       R_Decode = R_Decode:gsub(',0$', '')
       R_Decode = R_Decode..' '..'ћќм'
     else
-      print('ERROR: Out of Range')
+      ERR_message = 'ERROR: Out of Range'
+      return false, ERR_message
     end    
-  
---[==[  
-    if ( Value_float == 0 ) then
-      R_Code = R_Mantiss..'0'
-    elseif ( Value_float < 10 ) then
-      R_Code = R_Mantiss:sub(1, (#R_Mantiss - 1))..'R'..R_Mantiss:sub(#R_Mantiss)
-    else
-      R_Code = R_Mantiss..MUX[MUX_Num][1]
-      
-      if( MUX[MUX_Num][3] == false ) then
-        R_Decode = R_Mantiss:sub(1, (#R_Mantiss - 1))..','..R_Mantiss:sub(#R_Mantiss)
-      else
-        R_Decode = R_Mantiss
-      end
-    end  
- ]==]   
-    
-    
-    
-    
   else
   
   end
   
-  
-  
-  
-  
   Code = Code..R_Code..PACKAGING[SIZE_Num][2]..TERMINATION[1][1]
-  --Decode = Decode..R_Decode..' '..MUX[MUX_Num][3]..')'
   Decode = Decode..R_Decode..')'
-  print(Code)
-  print(Decode)
----------------------------  
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+  return true, E_R_message, Decode..'\\'..Code..'\\'..'Bourns'
 end
 
 
+local function Check_CR_Name(Name)  --FIXME допилить...
+  local E_message = ''
+  local Name_updated = Name
+
+  Name_updated = Name_updated:gsub('[с—]', 'C')
+  if( Name_updated ~= Name ) then
+    E_message = '¬ наименовании присутствует русска€ буква "—". ƒолжна быть английска€ буква "C".\n'
+    return false, E_message, Name_updated
+  end
+
+--  Name_updated:match('(P1%-12)%-([%d,]+)%-([%d,]+) ([кћ]*ќм)±([%d,]) %%[%-ћЋћ1“”]*')
+
+  return 0, '', Name_updated
+end
 
 
+local function Detect_CR(Name)
+  local result, E_mess, Name_updated = Check_CR_Name(Name)
 
+  local Model = Name_updated:match('^([%D][%D])')
+  if( Model == 'CR' ) then
+    return true
+  end
 
-
-
-
-
-
-
-
+  return false
+end
 
 
 
@@ -1137,37 +1108,58 @@ end
 if arg[0]:find('CR_Bourns_decode.lua') ~= nil then
   local args = process_args()
 
-  local fin = io.open(args.fin_name, 'r')
-  if ( fin == nil ) then
-    os.exit(-1)
+  if (args.version ~= nil) then
+    print(version())
   end
 
-  local fout = io.open(args.fout_name,"w");
-  if ( fout == nil ) then
-    fin:close()
-    os.exit(-1)
+
+  if (args.info ~= nil) then
+    print(info())
   end
 
-  local flog = io.open(args.flog_name,"w");
-  if ( flog == nil ) then
-    fin:close()
-    fout:close()
-    os.exit(-1)
+
+  if (args.decode ~= nil) then
+    Name = args.decode:gsub('_', ' ')
+    local result, 
+        E_message,
+        attr_for_human,
+        attr_for_compare  = CR_Bourns_Decode(Name)
+
+    if(result == true) then
+      print(attr_for_human.Decode)
+      print(attr_for_human.Parameters)
+      print(attr_for_human.Package_Type)
+      print(attr_for_human.Package_Size)
+      print(attr_for_human.Op_Temp)
+    else
+      print(nil)
+      print(Error)
+    end
   end
 
-  exec(fin, fout, flog)
 
-  fin:close()
-  fout:close()
-  flog:close()
+  if (args.code ~= nil) then
+    local code_arg = split(args.code, '/')
+    local Size = code_arg[1]
+    local Value = code_arg[2]
+    local Tolerance = code_arg[3]
+
+    Value = Value:gsub('_', ' ')
+    local result, E_message, Name = CR_Bourns_Code(Size, Value, Tolerance)
+
+    print(Name)
+    print(E_message)
+  end
 
   os.exit(0)
 end
 
 
+
 return {
   version = version,
   info = info,
+  Detect = Detect_CR,
   Decode = CR_Bourns_Decode,
   Code = CR_Bourns_Code,
 }
