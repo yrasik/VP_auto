@@ -33,6 +33,8 @@ local function info()
   Модуль для манипуляций с таблицей элементов lua.
   Выполняет:
     1) преобразует файл в таблицу python.
+  
+    
 ]]
   return info
 end
@@ -61,6 +63,13 @@ local function process_args()
 end
 
 
+function dofile1(ilename)
+  local f = assert(loadfile(filename))
+  return asert(f(), 'ERROR in file "'..filename..'"')
+end
+
+
+
 local function split(instr, sep)
   local t = {}
   for str in string.gmatch(instr, "([^"..sep.."]+)") do
@@ -79,11 +88,12 @@ end
 
 local preamble = 
 [[
--- codepage cp1251
+#-- codepage cp1251
 
-if( type(Base) ~= 'table' ) then  //FIXME
-  Base = []
-end
+try:
+    if type(Base).__name__ != 'list': raise
+except:
+    Base = []
 
 
 ]]
@@ -106,18 +116,61 @@ Base.append(
   'Description' : '%s',
   'Op_Temp' : '%s',
   'Value' : '%s',
-  'Old_Values' = {%s
+  'Old_Values' : {%s
+  },
+  'TO_Values' : {%s
   }
+}
 )
 
 
 ]==]
 
 
+local template_TO_Values = 
+[==[
+
+    'text_prev' : '%s',
+    'table' : '%s',
+    'text_post_rus' : '%s',
+    'text_post_en' : '%s'
+]==]
+
+
+
+
+
+
 local function exec(base, fout, flog, Name)
   fout:write(preamble)
   for i = 1, #base do
     local element = base[i]
+      
+    element.Function = element.Function:gsub('\n','\\\n')
+    element.Parameters = element.Parameters:gsub('\n','\\\n')      
+      
+    local TO_Value = {} 
+    if ( type(element.TO_Values) == 'nil' ) then
+      TO_Value.text_prev = ''
+      TO_Value.table = ''
+      TO_Value.text_post_rus = ''
+      TO_Value.text_post_en = ''
+    else
+      TO_Value.text_prev = element.TO_Values.text_prev:gsub('\n','\\\n')
+      TO_Value.table = element.TO_Values.table:gsub('\n','\\\\\n')
+      TO_Value.text_post_rus = element.TO_Values.text_post_rus:gsub('\n','\\\n')
+      TO_Value.text_post_en = element.TO_Values.text_post_en:gsub('\n','\\\n')
+    end
+    
+    local TO_Values = string.format(
+                        template_TO_Values,
+                        TO_Value.text_prev,
+                        TO_Value.table,
+                        TO_Value.text_post_rus,
+                        TO_Value.text_post_en
+                      )
+    
+    
     local str = string.format(
                   template,
                   element.Ref,
@@ -133,7 +186,8 @@ local function exec(base, fout, flog, Name)
                   element.Description,
                   element.Op_Temp,
                   element.Value,
-                  ''
+                  '',
+                  TO_Values
                 )
 
     fout:write(str)
@@ -151,7 +205,11 @@ if arg[0]:find('lua_2_python.lua') ~= nil then
     os.exit(-1)
   end
 
-  dofile( args.fin_name ) -- Base = {}
+
+
+  dofile( args.fin_name ) -- DeviceBase = {}
+
+
 
   local fout = io.open(args.fout_name,"w");
   if ( fout == nil ) then

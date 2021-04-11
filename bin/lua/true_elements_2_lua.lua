@@ -56,7 +56,7 @@ local function process_args()
       t.flog_name = arg[i + 1]
       i = i + 2
     else
-      print(usage.."Bad flag: "..a)
+      print(info().."Bad flag: "..a)
       os.exit(-1)
     end
   end
